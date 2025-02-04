@@ -1,23 +1,21 @@
 function showItems(category, items) {
     const overlay = document.querySelector('.overlay');
     overlay.style.display = 'none';
-    
+
     const container = document.getElementById('floating-container');
     container.innerHTML = '';
 
     items.forEach((item, index) => {
-        // Load saved data from local storage if available
+        // Load saved data from localStorage or use initial item values
         const savedData = JSON.parse(localStorage.getItem(`${category}-${item.name}`)) || item;
 
         const box = document.createElement('div');
         box.className = 'floating-box';
-
-        // Editable inputs for weight and reps
         box.innerHTML = `
             <img src="${savedData.img}" alt="${savedData.name}">
             <span>${category} - ${savedData.name}</span>
             <label>Weight: <input type="text" value="${savedData.weight}" class="weight-input"></label>
-            <label>Reps: <input type="text" value="${savedData.reps}" class="reps-input"></label>
+            <p>Reps: ${savedData.reps}</p>
             <button onclick="saveItem('${category}', '${savedData.name}', this)">Save</button>
         `;
 
@@ -31,21 +29,21 @@ function showItems(category, items) {
 }
 
 function saveItem(category, itemName, buttonElement) {
-    // Find the parent container of the button to access inputs
     const box = buttonElement.parentElement;
     const weightInput = box.querySelector('.weight-input').value;
-    const repsInput = box.querySelector('.reps-input').value;
 
+    // Create a data object to save
     const dataToSave = {
         img: box.querySelector('img').src,
         name: itemName,
         weight: weightInput,
-        reps: repsInput
+        reps: box.querySelector('p').textContent.replace('Reps: ', '')
     };
 
-    // Save to localStorage
+    // Save data to localStorage
     localStorage.setItem(`${category}-${itemName}`, JSON.stringify(dataToSave));
-    alert(`Data for "${itemName}" saved successfully!`);
+
+    alert(`Weight for "${itemName}" saved successfully!`);
 }
 
 function hideBoxes() {
