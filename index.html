@@ -1,192 +1,318 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babe Sculpting</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            padding: 20px;
-            background-color: #f4f4f4;
-            justify-content: space-around;
-        }
-        .thumbnail-container {
-            position: relative;
-            flex: 1 1 calc(33% - 20px);
-            max-width: 300px;
-            height: auto;
-            aspect-ratio: 1;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .thumbnail-container:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-        }
-        .thumbnail-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .label {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            color: white;
-            text-align: center;
-            padding: 10px 5px;
-            font-size: 3vw;
-            font-weight: bold;
-            letter-spacing: 1px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 1;
-            -webkit-box-orient: vertical;
-        }
-        .floating-box {
-            position: absolute;
-            padding: 15px 30px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            transition: transform 0.3s, opacity 0.3s;
-            opacity: 0;
-            width: 320px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-        }
-        .floating-box img {
-            width: 180px;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-        .floating-box span, .floating-box p {
-            margin: 0;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            word-wrap: break-word;
-            letter-spacing: 1px;
-        }
-        .floating-box p {
-            font-size: 1.2rem;
-            line-height: 1.5;
-        }
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
-        .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .floating-box.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    </style>
-   <!-- Link to Icons for Web App (PWA) -->
-    <link rel="icon" href="icon-192x192.png" sizes="192x192" type="image/png">
-    <link rel="icon" href="icon-512x512.png" sizes="512x512" type="image/png">
-
-    <!-- Optionally, Add Apple Touch Icons for iOS -->
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="icon-512x512.png">
-
-    <!-- Link to Manifest for PWA --
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Babe Sculpting</title>
+<style>
+body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    background-color: #f4f4f4;
+    justify-content: space-around;
+}
+.thumbnail-container {
+    position: relative;
+    flex: 1 1 calc(33% - 20px);
+    max-width: 300px;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.thumbnail-container:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+}
+.thumbnail-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0,0,0,0.6);
+    color: white;
+    text-align: center;
+    padding: 10px 5px;
+    font-size: 3vw;
+    font-weight: bold;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+}
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+}
+#floating-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 380px;
+    max-height: 80%;
+    overflow-y: auto;
+    z-index: 1000;
+}
+.floating-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.floating-box img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+.floating-box span {
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-align: center;
+}
+.chart-wrapper {
+    display: block;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    border: 1px solid #e6e6e6;
+    margin-top: 12px;
+    padding: 5px;
+}
+.chart {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    grid-auto-rows: 38px;
+    gap: 1px;
+    background: #f0f0f0;
+}
+.cell {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 2px;
+    user-select: none;
+}
+.chart-label {
+    font-weight: 700;
+    color: #444;
+}
+.editable {
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+    cursor: text;
+    font-weight: 600;
+}
+.editable:focus {
+    background: #fff;
+    border-bottom-color: #999;
+    outline: none;
+}
+.slider-container {
+    width: 100%;
+    text-align: center;
+    font-size: 11px;
+    color: #666;
+}
+input[type="range"] {
+    width: 100%;
+    height: 6px;
+    margin-top: 3px;
+    appearance: none;
+    background: #ddd;
+    border-radius: 3px;
+    outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #222;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.plate {
+    font-weight: 600;
+    color: #444;
+    transition: background 0.15s ease;
+}
+.plate.active {
+    background: #eef3ff;
+    color: #1f3fbf;
+}
+</style>
 </head>
 <body>
 
-<!-- Thumbnails for all categories -->
+<!-- MUSCLE GROUPS -->
+
 <div class="thumbnail-container" onclick="showItems('Legs/Glutes', [
-    { name: 'Leg curl', img: 'https://www.hoistfitness.com/cdn/shop/files/RS-2408_FINISHSIDE2_resized.png', weight: '60–65 lbs', reps: '8–15' },
-    { name: 'Leg press', img: 'https://i.ytimg.com/vi/n2ng6LCp3yk/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCYlu8eJt-V-xpgvoaN0HTixKQcPQ', weight: '190–220 lbs', reps: '8–12' },
-	{ name: 'Hip Spread', img: 'https://blackbearfitness.co.uk/cdn/shop/files/Untitled-design33-1_cleanup.png?v=1749038277&width=1080', weight: '20 lbs', reps: '8–12' },
-	{ name: 'Hip Squeeze', img: 'https://extremefitness.co.uk/wp-content/uploads/Untitled-design29.jpg', weight: '20 lbs', reps: '15–20' },
-	{ name: 'Leg Extensions', img: 'https://cffstrengthequipment.com/cdn/shop/products/hoist_leg_extension_rs_1401_a.1_1024x1024.jpg?v=1634579676', weight: '20 lbs', reps: '15–20' },
-    { name: 'Booty squats', img: 'https://www.shutterstock.com/image-photo/woman-training-fitness-rubber-band-260nw-2210643481.jpg', weight: '20–25 lbs', reps: '8–12' }
+    { name: 'Leg curl', img: 'https://www.hoistfitness.com/cdn/shop/files/RS-2408_FINISHSIDE2_resized.png' },
+    { name: 'Leg press', img: 'https://i.ytimg.com/vi/n2ng6LCp3yk/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCYlu8eJt-V-xpgvoaN0HTixKQcPQ' },
+    { name: 'Hip Spread', img: 'https://blackbearfitness.co.uk/cdn/shop/files/Untitled-design33-1_cleanup.png?v=1749038277&width=1080' },
+    { name: 'Hip Squeeze', img: 'https://extremefitness.co.uk/wp-content/uploads/Untitled-design29.jpg' },
+    { name: 'Leg Extensions', img: 'https://cffstrengthequipment.com/cdn/shop/products/hoist_leg_extension_rs_1401_a.1_1024x1024.jpg?v=1634579676' },
+    { name: 'Booty squats', img: 'https://www.shutterstock.com/image-photo/woman-training-fitness-rubber-band-260nw-2210643481.jpg' }
 ])">
     <img src="https://jessicaautumn.com/wp-content/uploads/2019/06/10-Minute-Workout-For-The-Perfect-Bubble-Butt.png" alt="Legs/Glutes">
-    <div class="label">legs/Glutes</div>
+    <div class="label">Legs/Glutes</div>
 </div>
 
 <div class="thumbnail-container" onclick="showItems('Back', [
-    { name: 'Row (triangle)', img: 'https://i.ytimg.com/vi/hxdhLPCCJQI/maxresdefault.jpg', weight: '55–60 lbs', reps: '12–15' },
-    { name: 'Row (bar)', img: 'https://i.ytimg.com/vi/9_35TQNqm7Q/hqdefault.jpg', weight: '45–55 lbs', reps: '12–15' },
-    { name: 'Pull down (triangle)', img: 'https://dungcutheduc.vn/images/close-grip-lat-pulldown.jpg', weight: '55–65 lbs', reps: '12–15' },
-    { name: 'Pull down (bar)', img: 'https://i.vimeocdn.com/video/867314588-2df5ed95e1dd9a7e8b4ffac1252238ee8c4e82fbfbc2204f445dfe74cda98039-d?f=webp', weight: '50–60 lbs', reps: '12–15' },
-    { name: 'Face pull', img: 'https://i.pinimg.com/736x/f3/68/85/f3688525e50f2814a74990a1a06b4895.jpg', weight: '30–35 lbs', reps: '12–15' },
-    { name: 'Rear Delt Flyes', img: 'https://www.buyandsellfitness.com/cdn/shop/products/Rear-Delt-Finsh_1024x1024.jpg?v=1657142291', weight: '45–55 lbs', reps: '12–15' }
+    { name: 'Row (triangle)', img: 'https://i.ytimg.com/vi/hxdhLPCCJQI/maxresdefault.jpg' },
+    { name: 'Row (bar)', img: 'https://i.ytimg.com/vi/9_35TQNqm7Q/hqdefault.jpg' },
+    { name: 'Pull down (triangle)', img: 'https://dungcutheduc.vn/images/close-grip-lat-pulldown.jpg' },
+    { name: 'Pull down (bar)', img: 'https://i.vimeocdn.com/video/867314588-2df5ed95e1dd9a7e8b4ffac1252238ee8c4e82fbfbc2204f445dfe74cda98039-d?f=webp' },
+    { name: 'Face pull', img: 'https://i.pinimg.com/736x/f3/68/85/f3688525e50f2814a74990a1a06b4895.jpg' },
+    { name: 'Rear Delt Flyes', img: 'https://www.buyandsellfitness.com/cdn/shop/products/Rear-Delt-Finsh_1024x1024.jpg?v=1657142291' }
 ])">
     <img src="https://betterme.world/articles/wp-content/uploads/2023/04/shutterstock_1654270861.jpg" alt="Back">
     <div class="label">Back</div>
 </div>
 
 <div class="thumbnail-container" onclick="showItems('Biceps', [
-    { name: 'Hammer curl dumbbell', img: 'https://julielohre.com/wp-content/uploads/2018/07/Bicep-Hammer-Curl.jpg', weight: '15 lbs', reps: '12–15' },
-    { name: 'Open hand curl dumbbell', img: 'https://kefl.co.uk/cdn/shop/articles/best-dumbbell-exercises-for-building-muscle-148250.jpg?v=1719202494&width=2048', weight: '15 lbs', reps: '12–15' },
-    { name: 'Rope curl', img: 'https://img.livestrong.com/375/cme-data/getty/d98f17ab178a4804b614028dfa95278e.jpg', weight: '25–30 lbs', reps: '12–15' },
-    { name: 'Drag curls', img: 'https://i.ytimg.com/vi/1n_2P4OR-0Q/maxresdefault.jpg', weight: '35–40 lbs', reps: '12–15' }
+    { name: 'Hammer curl dumbbell', img: 'https://julielohre.com/wp-content/uploads/2018/07/Bicep-Hammer-Curl.jpg' },
+    { name: 'Open hand curl dumbbell', img: 'https://kefl.co.uk/cdn/shop/articles/best-dumbbell-exercises-for-building-muscle-148250.jpg?v=1719202494&width=2048' },
+    { name: 'Rope curl', img: 'https://img.livestrong.com/375/cme-data/getty/d98f17ab178a4804b614028dfa95278e.jpg' },
+    { name: 'Drag curls', img: 'https://i.ytimg.com/vi/1n_2P4OR-0Q/maxresdefault.jpg' }
 ])">
     <img src="https://i.pinimg.com/736x/e4/fd/2e/e4fd2e34aec8c4f86e10fceb79fe1bed.jpg" alt="Biceps">
     <div class="label">Biceps</div>
 </div>
 
 <div class="thumbnail-container" onclick="showItems('Chest', [
-    { name: 'Machine chest press', img: 'https://t4.ftcdn.net/jpg/03/00/96/39/360_F_300963984_2urLgUI7vwOgZzZcKUGJUFsPwSazs6ok.jpg', weight: '40–45 lbs', reps: '12–15' },
-    { name: 'Chest flyes', img: 'https://workouthealthy.com/cdn/shop/files/BS-S2PEC_Body-Solid-Rear-Delt-Chest-Fly-Machine-2.webp?v=1747860666&width=1080', weight: '10–15 lbs', reps: '12–15' },
+    { name: 'Machine chest press', img: 'https://t4.ftcdn.net/jpg/03/00/96/39/360_F_300963984_2urLgUI7vwOgZzZcKUGJUFsPwSazs6ok.jpg' },
+    { name: 'Chest flyes', img: 'https://workouthealthy.com/cdn/shop/files/BS-S2PEC_Body-Solid-Rear-Delt-Chest-Fly-Machine-2.webp?v=1747860666&width=1080' }
 ])">
     <img src="https://hips.hearstapps.com/hmg-prod/images/766/articles/2017/10/benchpress-1508589156.jpg" alt="Chest">
     <div class="label">Chest</div>
 </div>
 
 <div class="thumbnail-container" onclick="showItems('Shoulders', [
-    { name: 'Shoulder press', img: 'https://vtasfitnesscentre.com/wp-content/uploads/2021/03/Dumbbell-Shoulder-Press.jpg', weight: '10–15 lbs', reps: '12–15' },
-    { name: 'Lateral raise', img: 'https://images.ctfassets.net/8urtyqugdt2l/1EG31PaEzRIWNnuW9VeXcI/29ca964acdaf4d51494ca515971093f9/tile-image-how-to-do-lateral-raises.jpg', weight: '5–10 lbs', reps: '12–15' }
+    { name: 'Shoulder press', img: 'https://vtasfitnesscentre.com/wp-content/uploads/2021/03/Dumbbell-Shoulder-Press.jpg' },
+    { name: 'Lateral raise', img: 'https://images.ctfassets.net/8urtyqugdt2l/1EG31PaEzRIWNnuW9VeXcI/29ca964acdaf4d51494ca515971093f9/tile-image-how-to-do-lateral-raises.jpg' }
 ])">
     <img src="https://media.istockphoto.com/id/1370070773/photo/fitness.jpg?s=612x612&w=0&k=20&c=FjKgCTJnlLUV8V0ftf0rgsjKgUPD83hWZQURViRRBmk=" alt="Shoulders">
     <div class="label">Shoulders</div>
 </div>
 
 <div class="thumbnail-container" onclick="showItems('Triceps', [
-    { name: 'Rope triceps', img: 'https://s3assets.skimble.com/assets/2674907/image_full.jpg', weight: '25–30 lbs', reps: '12–15' },
-    { name: 'Triangle tricep push down', img: 'https://images.squarespace-cdn.com/content/v1/5c641b18da50d324fa8e85f0/1558676371581-CP59HQY1BE0EMVICBOUJ/chloe+hamard+PT+tricep+exercises.jpg?format=500w', weight: '35–45 lbs', reps: '12–15' },
-    { name: 'Dip Machine', img: 'https://s3.amazonaws.com/prod.skimble/assets/1495083/image_iphone.jpg', weight: '35–45 lbs', reps: '12–15' }
+    { name: 'Rope triceps', img: 'https://s3assets.skimble.com/assets/2674907/image_full.jpg' },
+    { name: 'Triangle tricep push down', img: 'https://images.squarespace-cdn.com/content/v1/5c641b18da50d324fa8e85f0/1558676371581-CP59HQY1BE0EMVICBOUJ/chloe+hamard+PT+tricep+exercises.jpg?format=500w' },
+    { name: 'Dip Machine', img: 'https://s3.amazonaws.com/prod.skimble/assets/1495083/image_iphone.jpg' }
 ])">
     <img src="https://t4.ftcdn.net/jpg/01/70/23/39/360_F_170233939_NAVDp5d9kTWMwthTNC3ZJiwqxrKOfdUs.jpg" alt="Triceps">
     <div class="label">Triceps</div>
 </div>
 
-
 <div class="overlay" onclick="hideBoxes()"></div>
+<div id="floating-container"></div>
 
-<div class="container" id="floating-container"></div>
+<script>
+function showItems(category, items) {
+    document.querySelector('.overlay').style.display = 'block';
+    const container = document.getElementById('floating-container');
+    container.innerHTML = '';
 
-<script src="script.js">
+    items.forEach(item => {
+        const box = document.createElement('div');
+        box.className = 'floating-box';
+        box.innerHTML = `<img src="${item.img}" alt="${item.name}"><span>${category} - ${item.name}</span>`;
+        container.appendChild(box);
+
+        ['Warm Up','1','2','3'].forEach(label => {
+            const chartWrapper = document.createElement('div');
+            chartWrapper.className = 'chart-wrapper';
+            const savedData = JSON.parse(localStorage.getItem(`${category}-${item.name}-${label}`)) || {weight:0,set:1};
+            chartWrapper.innerHTML = `
+                <div class="chart">
+                    <div class="cell chart-label">${label}</div>
+                    <div class="cell" style="grid-column: 2 / span 2;">
+                        <div class="slider-container">
+                            <div class="set-value">${savedData.set}</div>
+                            <input type="range" class="set-slider" min="1" max="20" value="${savedData.set}">
+                        </div>
+                    </div>
+                    <div class="cell editable" contenteditable="true" style="grid-column: 4 / span 2;">${savedData.weight}</div>
+                    <div class="cell plate" data-weight="45">45 × 0</div>
+                    <div class="cell plate" data-weight="25">25 × 0</div>
+                    <div class="cell plate" data-weight="10">10 × 0</div>
+                    <div class="cell plate" data-weight="5">5 × 0</div>
+                    <div class="cell plate" data-weight="2.5">2.5 × 0</div>
+                </div>
+            `;
+            box.appendChild(chartWrapper);
+
+            const weightInput = chartWrapper.querySelector('.editable');
+            const plates = chartWrapper.querySelectorAll('.plate');
+            const slider = chartWrapper.querySelector('.set-slider');
+            const sliderValue = chartWrapper.querySelector('.set-value');
+
+            slider.addEventListener('input', ()=>{
+                sliderValue.textContent = slider.value;
+                saveChart();
+            });
+
+            function updatePlates() {
+                let weight = parseFloat(weightInput.textContent.replace(/[^0-9.]/g,''))||0;
+                let remaining = weight;
+                const plateWeights = [45,25,10,5,2.5];
+                plates.forEach((plate,i)=>{
+                    const count = Math.floor(remaining/plateWeights[i]);
+                    remaining -= count*plateWeights[i];
+                    plate.textContent = `${plateWeights[i]} × ${count}`;
+                    plate.classList.toggle('active',count>0);
+                });
+                saveChart();
+            }
+
+            function saveChart() {
+                const data = {weight:parseFloat(weightInput.textContent.replace(/[^0-9.]/g,''))||0,set:parseInt(slider.value)};
+                localStorage.setItem(`${category}-${item.name}-${label}`,JSON.stringify(data));
+            }
+
+            weightInput.addEventListener('input',updatePlates);
+            weightInput.addEventListener('focus',updatePlates);
+            weightInput.addEventListener('blur',updatePlates);
+            updatePlates();
+        });
+    });
+}
+
+function hideBoxes(){
+    document.querySelector('.overlay').style.display = 'none';
+    document.getElementById('floating-container').innerHTML='';
+}
 </script>
 
 </body>
