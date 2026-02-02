@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Babe Sculpting</title>
 
-<!-- iOS PWA polish -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Babe Sculpting">
@@ -21,7 +20,6 @@
     gap:20px;
     justify-content:space-around;
 
-    /* iOS safe area */
     padding-top: calc(20px + env(safe-area-inset-top));
     padding-right: calc(20px + env(safe-area-inset-right));
     padding-bottom: calc(20px + env(safe-area-inset-bottom));
@@ -80,7 +78,6 @@
   }
   .controls button:active{ transform:scale(.98); background:#f6f6f6; }
 
-  /* ---------- Overlay + Panel (iOS-friendly) ---------- */
   .overlay{
     position:fixed; inset:0;
     background:rgba(0,0,0,.55);
@@ -89,16 +86,21 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
+
+  /* ✅ FIX: make panel a flex column and avoid 100vh math */
   #panel{
     position:fixed;
     inset: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     z-index:1000;
-    width:auto;
-    overflow:hidden;
     padding:0;
     border-radius:16px;
     background: rgba(245,245,247,.92);
     box-shadow:0 20px 50px rgba(0,0,0,.35);
+
+    display:flex;              /* ✅ */
+    flex-direction:column;     /* ✅ */
+    min-height:0;              /* ✅ allows inner scrolling */
+
     transform: translateY(18px);
     opacity:0;
     pointer-events:none;
@@ -114,6 +116,7 @@
     border-bottom:1px solid #e6e6e6;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+    flex:0 0 auto;             /* ✅ */
   }
   .panel-title{
     font-weight:900; font-size:16px; letter-spacing:.2px; color:#111;
@@ -131,13 +134,16 @@
   }
   .panel-close:active{ transform: scale(.98); }
 
+  /* ✅ FIX: flex body fills remaining space and scrolls to the REAL bottom */
   .panel-body{
-    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 54px);
-    overflow:auto;
+    flex:1 1 auto;              /* ✅ */
+    min-height:0;               /* ✅ */
+    overflow:auto;              /* ✅ */
+    -webkit-overflow-scrolling: touch;
     padding:12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* ✅ helps reach last card */
   }
 
-  /* Exercise cards */
   .exercise-card{
     background:#fff;
     border-radius:14px;
@@ -153,7 +159,6 @@
     margin:0 auto 10px;
   }
 
-  /* Top bar inside each card (title + menu) */
   .exercise-topbar{
     display:flex;
     align-items:center;
@@ -185,7 +190,6 @@
   }
   .card-menu-btn:active{ transform: scale(.98); }
 
-  /* --- Plate charts (kept) --- */
   .chart-wrapper{
     display:inline-block;
     width:fit-content;
@@ -234,7 +238,7 @@
     padding:2px 6px;
     -webkit-appearance:none;
     appearance:none;
-    font-size:16px; /* stop iOS zoom */
+    font-size:16px;
     font-weight:900;
   }
   .editable:focus-within{
@@ -250,7 +254,6 @@
     .chart{ grid-template-columns:repeat(5,64px); }
   }
 
-  /* iOS keyboard Done bar */
   #kbdDoneBar{
     position:fixed; left:0; right:0; bottom:0;
     padding:10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -273,7 +276,6 @@
   }
   #kbdDoneBtn:active{ transform: scale(.98); }
 
-  /* One-tap buttons (reused across modals) */
   .actionBtn{
     padding:14px 14px;
     border-radius:14px;
@@ -285,23 +287,13 @@
     box-shadow:0 10px 26px rgba(0,0,0,.10);
   }
   .actionBtn:active{ transform:scale(.99); }
-  .actionBtn.primary{
-    border-color: rgba(31,63,191,.25);
-    background:#eef3ff;
-  }
-  .actionBtn.danger{
-    border-color:#eee;
-    background:#fafafa;
-    color:#333;
-  }
+  .actionBtn.primary{ border-color: rgba(31,63,191,.25); background:#eef3ff; }
+  .actionBtn.danger{ border-color:#eee; background:#fafafa; color:#333; }
 
-  /* Export fallback modal (one-tap friendly + Share) */
   #exportFallback{
-    position:fixed;
-    inset:0;
+    position:fixed; inset:0;
     background:rgba(0,0,0,.60);
-    display:none;
-    z-index:3000;
+    display:none; z-index:3000;
     padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
   }
   #exportFallback .box{
@@ -316,21 +308,10 @@
     gap:12px;
   }
   #exportFallback .titleRow{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
   }
-  #exportFallback .title{
-    font-weight:950;
-    font-size:16px;
-    color:#111;
-  }
-  #exportFallback .desc{
-    font-size:13px;
-    color:#444;
-    line-height:1.35;
-  }
+  #exportFallback .title{ font-weight:950; font-size:16px; color:#111; }
+  #exportFallback .desc{ font-size:13px; color:#444; line-height:1.35; }
   #exportFallback .actions{
     display:grid;
     grid-template-columns: 1fr 1fr;
@@ -359,13 +340,10 @@
     text-align:left;
   }
 
-  /* Add Exercise Modal */
   #addExerciseModal{
-    position:fixed;
-    inset:0;
+    position:fixed; inset:0;
     background:rgba(0,0,0,.60);
-    display:none;
-    z-index:3500;
+    display:none; z-index:3500;
     padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
   }
   #addExerciseModal .box{
@@ -380,15 +358,9 @@
     gap:12px;
   }
   #addExerciseModal .row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
   }
-  #addExerciseModal label{
-    font-weight:900;
-    font-size:13px;
-  }
+  #addExerciseModal label{ font-weight:900; font-size:13px; }
   #addExerciseModal input, #addExerciseModal select{
     padding:12px;
     border-radius:12px;
@@ -399,13 +371,10 @@
     box-sizing:border-box;
   }
 
-  /* Action sheet for exercise options */
   #actionSheet{
-    position:fixed;
-    inset:0;
+    position:fixed; inset:0;
     background:rgba(0,0,0,.45);
-    display:none;
-    z-index:3600;
+    display:none; z-index:3600;
     padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
   }
   #actionSheet .sheet{
@@ -422,20 +391,9 @@
     padding:14px 14px 10px;
     border-bottom:1px solid rgba(0,0,0,.08);
   }
-  #actionSheet .sheetTitle{
-    font-weight:950;
-    font-size:16px;
-    color:#111;
-  }
-  #actionSheet .sheetSub{
-    margin-top:4px;
-    font-size:12px;
-    color:#555;
-  }
-  #actionSheet .sheetBtns{
-    display:flex;
-    flex-direction:column;
-  }
+  #actionSheet .sheetTitle{ font-weight:950; font-size:16px; color:#111; }
+  #actionSheet .sheetSub{ margin-top:4px; font-size:12px; color:#555; }
+  #actionSheet .sheetBtns{ display:flex; flex-direction:column; }
   #actionSheet .sheetBtn{
     padding:16px 14px;
     border:0;
@@ -455,7 +413,6 @@
     overflow:hidden;
   }
 
-  /* Toast */
   #toast{
     position:fixed;
     left:50%;
@@ -476,7 +433,6 @@
 
 <body>
 
-<!-- Thumbnails -->
 <div class="thumbnail-container" onclick="openGroup('legs')">
   <img src="https://jessicaautumn.com/wp-content/uploads/2019/06/10-Minute-Workout-For-The-Perfect-Bubble-Butt.png" loading="lazy">
   <div class="label">Legs / Glutes</div>
@@ -513,14 +469,12 @@
 <div class="overlay" onclick="closePanel()"></div>
 <div id="panel"></div>
 
-<!-- iOS Keyboard Done bar -->
 <div id="kbdDoneBar">
   <div style="display:flex; justify-content:flex-end; gap:10px;">
     <button id="kbdDoneBtn" type="button">Done</button>
   </div>
 </div>
 
-<!-- Export fallback (one-tap friendly + Share) -->
 <div id="exportFallback" onclick="closeExportFallback()">
   <div class="box" onclick="event.stopPropagation()">
     <div class="titleRow">
@@ -545,7 +499,6 @@
   </div>
 </div>
 
-<!-- Add Exercise Modal -->
 <div id="addExerciseModal" onclick="closeAddExercise()">
   <div class="box" onclick="event.stopPropagation()">
     <div class="row">
@@ -571,15 +524,9 @@
     <input id="addImg" type="url" placeholder="https://...">
 
     <button class="actionBtn primary" type="button" onclick="saveNewExercise()">Save Exercise</button>
-
-    <div style="font-size:12px;color:#555;line-height:1.35;">
-      Exercises are saved on this device and are fully editable.
-      They will also export/import with your data.
-    </div>
   </div>
 </div>
 
-<!-- Exercise Action Sheet -->
 <div id="actionSheet" onclick="closeActionSheet()">
   <div class="sheet" onclick="event.stopPropagation()">
     <div class="sheetHead">
@@ -602,7 +549,6 @@
 <div id="toast"></div>
 
 <script>
-/* ---------- Original built-ins (used only to seed editable DB one time) ---------- */
 const DATA = {
   legs: [
     { name:'Leg curl', img:'https://www.hoistfitness.com/cdn/shop/files/RS-2408_FINISHSIDE2_resized.png' },
@@ -650,13 +596,11 @@ const GROUP_LABELS = {
   triceps:"Triceps"
 };
 
-/* ---------- Editable Exercise DB (ALL exercises live here) ---------- */
 const EXDB_KEY = "BSCULPT::EXERCISE_DB_V1";
 
 function makeId(){
   return "ex_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
-
 function getExerciseDB(){
   try{
     const db = JSON.parse(localStorage.getItem(EXDB_KEY) || "");
@@ -664,61 +608,42 @@ function getExerciseDB(){
   }catch(e){}
   return null;
 }
-
 function setExerciseDB(db){
   localStorage.setItem(EXDB_KEY, JSON.stringify(db));
 }
-
 function seedExerciseDBIfMissing(){
   const existing = getExerciseDB();
   if(existing) return;
 
   const db = {};
   Object.keys(DATA).forEach(groupKey=>{
-    db[groupKey] = (DATA[groupKey] || []).map(ex => ({
-      id: makeId(),
-      name: ex.name,
-      img: ex.img
-    }));
+    db[groupKey] = (DATA[groupKey] || []).map(ex => ({ id: makeId(), name: ex.name, img: ex.img }));
   });
   setExerciseDB(db);
 }
-
 function getExercisesForGroup(groupKey){
   const db = getExerciseDB() || {};
   return (db[groupKey] || []).map(x => ({...x, custom:true}));
 }
-
 function addExerciseToGroup(groupKey, name, img){
   const db = getExerciseDB() || {};
   if(!db[groupKey]) db[groupKey] = [];
-
   const exists = db[groupKey].some(e => String(e.name).toLowerCase() === name.toLowerCase());
   if(exists) return { ok:false, msg:"That exercise already exists in this muscle group." };
-
-  db[groupKey].push({
-    id: makeId(),
-    name,
-    img: img || "https://via.placeholder.com/400?text=Exercise"
-  });
-
+  db[groupKey].push({ id: makeId(), name, img: img || "https://via.placeholder.com/400?text=Exercise" });
   setExerciseDB(db);
   return { ok:true };
 }
-
 function updateExercise(groupKey, exId, patch){
   const db = getExerciseDB() || {};
   const list = db[groupKey] || [];
   const item = list.find(x => x.id === exId);
   if(!item) return false;
-
   if(patch.name !== undefined) item.name = patch.name;
   if(patch.img !== undefined) item.img = patch.img;
-
   setExerciseDB(db);
   return true;
 }
-
 function deleteExerciseFromGroup(groupKey, exId){
   const db = getExerciseDB() || {};
   const list = db[groupKey] || [];
@@ -726,12 +651,10 @@ function deleteExerciseFromGroup(groupKey, exId){
   setExerciseDB(db);
 }
 
-/* ---------- Navigation ---------- */
 function openGroup(groupKey){
   openExercises(GROUP_LABELS[groupKey] || groupKey, getExercisesForGroup(groupKey), groupKey);
 }
 
-/* ---------- Panel ---------- */
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
@@ -790,7 +713,6 @@ function closePanel(){
   if(bar) bar.style.display='none';
 }
 
-/* ---------- Charts ---------- */
 function safeKey(str){ return String(str).replace(/\s+/g,' ').trim(); }
 
 function buildChart(group, ex, label){
@@ -839,7 +761,6 @@ function buildChart(group, ex, label){
   return wrapper;
 }
 
-/* iOS keypad "Done" bar wiring */
 function wireKeyboardDone(){
   const bar = document.getElementById('kbdDoneBar');
   const btn = document.getElementById('kbdDoneBtn');
@@ -862,7 +783,6 @@ function wireKeyboardDone(){
   };
 }
 
-/* ---------- Add Exercise Modal ---------- */
 function openAddExercise(){
   document.getElementById('addName').value = "";
   document.getElementById('addImg').value = "";
@@ -876,18 +796,14 @@ function saveNewExercise(){
   const groupKey = document.getElementById('addGroup').value;
   const name = (document.getElementById('addName').value || "").trim();
   const img = (document.getElementById('addImg').value || "").trim();
-
   if(!name){ alert("Please enter an exercise name."); return; }
-
   const res = addExerciseToGroup(groupKey, name, img);
   if(!res.ok){ alert(res.msg); return; }
-
   closeAddExercise();
   toast("Saved!");
   openGroup(groupKey);
 }
 
-/* ---------- Action Sheet (exercise options) ---------- */
 let ACTION_CTX = { groupKey:null, exId:null, exName:null };
 
 function openActionSheet(ev, groupKey, exId, exName){
@@ -900,55 +816,44 @@ function openActionSheet(ev, groupKey, exId, exName){
 function closeActionSheet(){
   document.getElementById('actionSheet').style.display='none';
 }
-
 function renameExercise(){
   const {groupKey, exId, exName} = ACTION_CTX;
   const next = prompt("Rename exercise:", exName || "");
   if(next === null) return;
-
   const name = next.trim();
   if(!name){ alert("Name cannot be empty."); return; }
-
   const list = getExercisesForGroup(groupKey);
   const dup = list.some(x => x.id !== exId && String(x.name).toLowerCase() === name.toLowerCase());
   if(dup){ alert("That name already exists in this group."); return; }
-
   updateExercise(groupKey, exId, { name });
   closeActionSheet();
   toast("Renamed!");
   openGroup(groupKey);
 }
-
 function changeExerciseImage(){
   const {groupKey, exId} = ACTION_CTX;
   const list = getExercisesForGroup(groupKey);
   const item = list.find(x => x.id === exId);
   const current = item ? item.img : "";
-
   const next = prompt("Paste image URL:", current || "");
   if(next === null) return;
-
   const url = next.trim();
   if(!url){ alert("Image URL cannot be empty."); return; }
-
   updateExercise(groupKey, exId, { img: url });
   closeActionSheet();
   toast("Updated image!");
   openGroup(groupKey);
 }
-
 function deleteExercise(){
   const {groupKey, exId, exName} = ACTION_CTX;
   const ok = confirm(`Delete "${exName}"?`);
   if(!ok) return;
-
   deleteExerciseFromGroup(groupKey, exId);
   closeActionSheet();
   toast("Deleted!");
   openGroup(groupKey);
 }
 
-/* ---------- Export / Import ---------- */
 const GROUP_ORDER=[
   {key:'legs',name:'Legs/Glutes'},
   {key:'back',name:'Back'},
@@ -963,9 +868,7 @@ let LAST_EXPORT_JSON = "";
 let LAST_EXPORT_FILE = null;
 
 function exportData(){
-  const out={meta:{app:'Babe Sculpting',version:5,exportedAt:new Date().toISOString()},groups:[]};
-
-  // ✅ include full editable exercise DB
+  const out={meta:{app:'Babe Sculpting',version:6,exportedAt:new Date().toISOString()},groups:[]};
   out.exerciseDB = getExerciseDB();
 
   GROUP_ORDER.forEach(g=>{
@@ -994,7 +897,6 @@ function exportData(){
     LAST_EXPORT_FILE = null;
   }
 
-  // Try normal download
   try{
     const blob=new Blob([json],{type:'application/json'});
     const url=URL.createObjectURL(blob);
@@ -1007,7 +909,6 @@ function exportData(){
     URL.revokeObjectURL(url);
   }catch(e){}
 
-  // iOS always gets fallback so Export never "does nothing"
   const ua = navigator.userAgent || "";
   const isiOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
   if(isiOS){
@@ -1072,7 +973,6 @@ async function copyExportText(){
     }
   }catch(e){}
 
-  // Older iOS fallback
   const wrap=document.getElementById('exportTextWrap');
   const wasHidden = wrap.style.display === 'none';
   if(wasHidden) wrap.style.display='flex';
@@ -1082,7 +982,6 @@ async function copyExportText(){
   toast("Copied!");
 }
 
-/* Import */
 document.getElementById('importFile').onchange=e=>{
   const f=e.target.files[0]; if(!f) return;
   const r=new FileReader();
@@ -1090,7 +989,6 @@ document.getElementById('importFile').onchange=e=>{
     try{
       const d=JSON.parse(r.result);
 
-      // ✅ restore full exercise DB if present
       if(d.exerciseDB && typeof d.exerciseDB === "object"){
         setExerciseDB(d.exerciseDB);
       }
@@ -1114,12 +1012,10 @@ document.getElementById('importFile').onchange=e=>{
   e.target.value='';
 };
 
-/* Reset */
 function resetAll(){
   const ok = confirm('Reset all saved reps/weights AND the editable exercise list on this device? (Export first if you want a backup)');
   if(!ok) return;
 
-  // clear set/weight keys
   const keys=[];
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
@@ -1127,16 +1023,12 @@ function resetAll(){
   }
   keys.forEach(k=>localStorage.removeItem(k));
 
-  // clear exercise db
   localStorage.removeItem(EXDB_KEY);
-
-  // reseed defaults
   seedExerciseDBIfMissing();
 
   alert('All data cleared (defaults restored).');
 }
 
-/* ---------- Toast ---------- */
 let toastTimer=null;
 function toast(msg){
   const el=document.getElementById('toast');
@@ -1146,12 +1038,10 @@ function toast(msg){
   toastTimer=setTimeout(()=>{ el.style.display='none'; }, 1400);
 }
 
-/* ESC closes panel */
 window.addEventListener('keydown', (e)=>{
   if(e.key === 'Escape') closePanel();
 });
 
-/* Seed editable DB once */
 seedExerciseDBIfMissing();
 </script>
 </body>
