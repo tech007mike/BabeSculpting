@@ -2,201 +2,322 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Babe Sculpting</title>
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Babe Sculpting">
-
 <style>
+  :root{
+    --gap: 20px;
+    --cols: 3;
+
+    --bg0: #0b0f14;
+    --bg1: #0f1722;
+
+    --text: rgba(255,255,255,.92);
+    --gold2:#f2deaa;
+    --danger:#ff5c6e;
+
+    --shadow: 0 16px 45px rgba(0,0,0,.55);
+    --shadow2: 0 10px 28px rgba(0,0,0,.45);
+    --radius: 14px;
+  }
+
   body{
+    margin:0;
     font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
-    background:#f4f4f4;
+    color:var(--text);
     padding:20px;
-    color:#222;
+
+    background:
+      radial-gradient(1200px 900px at 15% 10%, rgba(61,214,198,.12), transparent 55%),
+      radial-gradient(900px 700px at 85% 20%, rgba(215,180,106,.12), transparent 52%),
+      radial-gradient(900px 700px at 55% 95%, rgba(255,255,255,.06), transparent 55%),
+      linear-gradient(180deg, var(--bg0), var(--bg1));
     display:flex;
     flex-wrap:wrap;
-    gap:20px;
+    gap:var(--gap);
     justify-content:space-around;
+  }
 
-    padding-top: calc(20px + env(safe-area-inset-top));
-    padding-right: calc(20px + env(safe-area-inset-right));
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
-    padding-left: calc(20px + env(safe-area-inset-left));
+  /* ✅ TRUE 1/2/3 across */
+  #groupsRoot{
+    width:100%;
+    display:grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    gap:var(--gap);
+    justify-items:stretch;
+    align-items:stretch;
   }
 
   .thumbnail-container{
     position:relative;
-    flex:1 1 calc(33% - 20px);
-    max-width:300px;
+    width:100%;
     aspect-ratio:1;
-    border-radius:10px;
+    border-radius:var(--radius);
     overflow:hidden;
     cursor:pointer;
-    box-shadow:0 4px 6px rgba(0,0,0,.1);
-    transition:transform .2s, box-shadow .2s;
-    background:#fff;
-    -webkit-tap-highlight-color: transparent;
+
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow: var(--shadow2);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-touch-callout:none;
+    touch-action:manipulation;
   }
-  .thumbnail-container:hover{ transform:scale(1.06); box-shadow:0 6px 10px rgba(0,0,0,.2); }
-  .thumbnail-container:active{ transform:scale(1.02); }
-  .thumbnail-container img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .thumbnail-container:hover{
+    transform: translateY(-3px) scale(1.03);
+    border-color: rgba(215,180,106,.35);
+    box-shadow: 0 18px 52px rgba(0,0,0,.60);
+  }
+
+  .thumbnail-container img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    filter: saturate(1.05) contrast(1.05);
+    transform: scale(1.02);
+  }
+
+  .thumbnail-container::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.12), transparent 35%),
+      radial-gradient(500px 500px at 20% 20%, rgba(215,180,106,.10), transparent 55%);
+    pointer-events:none;
+    mix-blend-mode: screen;
+    opacity:.55;
+  }
+
   .label{
-    position:absolute; left:0; right:0; bottom:0;
-    background:rgba(0,0,0,.6);
-    color:#fff;
+    position:absolute;
+    left:12px;
+    right:12px;
+    bottom:12px;
+
+    padding:10px 10px;
+    border-radius:12px;
+
+    background:
+      linear-gradient(180deg, rgba(12,16,22,.65), rgba(12,16,22,.45));
+    border:1px solid rgba(255,255,255,.10);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
     text-align:center;
-    padding:10px 8px;
-    font-size:18px;
-    font-weight:800;
-    letter-spacing:.5px;
+    font-weight:900;
+    letter-spacing:.35px;
+
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
+
+    font-size:18px;
+    line-height:1.1;
+
+    box-shadow: 0 10px 26px rgba(0,0,0,.45);
+  }
+
+  .tile-actions{
+    position:absolute;
+    top:10px;
+    right:10px;
+    display:flex;
+    gap:8px;
+    z-index:5;
+
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(-6px);
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .thumbnail-container.show-actions .tile-actions{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0);
+  }
+
+  .icon-btn{
+    border:1px solid rgba(255,255,255,.14);
+    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+    color: var(--text);
+    border-radius:12px;
+    padding:10px 11px;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow: 0 10px 24px rgba(0,0,0,.45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .icon-btn:active{ transform:scale(.98); }
+  .icon-btn.danger{
+    border-color: rgba(255,92,110,.35);
+    background: linear-gradient(180deg, rgba(255,92,110,.18), rgba(255,92,110,.08));
   }
 
   .controls{
     width:100%;
     display:flex;
-    justify-content:center;
-    gap:16px;
-    margin-top:10px;
     flex-wrap:wrap;
+    justify-content:center;
+    gap:12px;
+    margin-top:10px;
   }
-  .controls button{
-    padding:10px 18px;
-    font-size:16px;
-    font-weight:800;
-    border-radius:12px;
-    border:1px solid #ddd;
-    background:#fff;
-    cursor:pointer;
-    box-shadow:0 6px 18px rgba(0,0,0,.06);
-    -webkit-tap-highlight-color: transparent;
-    transition:transform .08s ease, background .15s ease;
-  }
-  .controls button:active{ transform:scale(.98); background:#f6f6f6; }
 
-  .overlay{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.55);
-    z-index:999;
-    display:none;
+  .controls button{
+    padding:11px 16px;
+    font-size:15px;
+    font-weight:900;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    color: var(--text);
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    cursor:pointer;
+    box-shadow: 0 12px 30px rgba(0,0,0,.45);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
+  .controls button:active{ transform:scale(.99); }
 
-  /* ✅ FIX: make panel a flex column and avoid 100vh math */
+  .grid-btn{
+    border-color: rgba(61,214,198,.35) !important;
+    box-shadow: 0 12px 30px rgba(61,214,198,.10), 0 12px 30px rgba(0,0,0,.45);
+  }
+
+  .reset-btn{
+    border-color: rgba(255,92,110,.35) !important;
+    background: linear-gradient(180deg, rgba(255,92,110,.18), rgba(255,92,110,.08)) !important;
+  }
+
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.68);
+    z-index:999;
+    display:none;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
   #panel{
     position:fixed;
-    inset: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
     z-index:1000;
-    padding:0;
+    width:min(560px, 92vw);
+    max-height:86vh;
+    overflow-y:auto;
+    padding:16px;
     border-radius:16px;
-    background: rgba(245,245,247,.92);
-    box-shadow:0 20px 50px rgba(0,0,0,.35);
-
-    display:flex;              /* ✅ */
-    flex-direction:column;     /* ✅ */
-    min-height:0;              /* ✅ allows inner scrolling */
-
-    transform: translateY(18px);
-    opacity:0;
-    pointer-events:none;
-    transition: transform .18s ease, opacity .18s ease;
+    background:transparent;
   }
-  #panel.show{ transform: translateY(0); opacity:1; pointer-events:auto; }
 
   .panel-header{
-    position:sticky; top:0;
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-    padding:12px 12px;
-    background: rgba(255,255,255,.90);
-    border-bottom:1px solid #e6e6e6;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    flex:0 0 auto;             /* ✅ */
-  }
-  .panel-title{
-    font-weight:900; font-size:16px; letter-spacing:.2px; color:#111;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .panel-close{
-    border:1px solid #ddd;
-    background:#fff;
-    border-radius:12px;
-    padding:10px 12px;
-    font-weight:900;
-    cursor:pointer;
-    box-shadow:0 6px 18px rgba(0,0,0,.06);
-    -webkit-tap-highlight-color: transparent;
-  }
-  .panel-close:active{ transform: scale(.98); }
-
-  /* ✅ FIX: flex body fills remaining space and scrolls to the REAL bottom */
-  .panel-body{
-    flex:1 1 auto;              /* ✅ */
-    min-height:0;               /* ✅ */
-    overflow:auto;              /* ✅ */
-    -webkit-overflow-scrolling: touch;
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius:16px;
+    box-shadow: var(--shadow);
     padding:12px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* ✅ helps reach last card */
+    margin-bottom:14px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .panel-title{
+    font-size:18px;
+    font-weight:950;
+    text-align:center;
+    margin:0 0 10px;
+    letter-spacing:.35px;
+  }
+
+  .panel-actions{
+    display:flex;
+    gap:10px;
+  }
+  .panel-actions button{
+    flex:1;
+    padding:11px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    color: var(--text);
+    font-weight:950;
+    cursor:pointer;
+    box-shadow: 0 12px 28px rgba(0,0,0,.45);
+  }
+  .panel-actions .danger{
+    border-color: rgba(255,92,110,.35);
+    background: linear-gradient(180deg, rgba(255,92,110,.18), rgba(255,92,110,.08));
   }
 
   .exercise-card{
-    background:#fff;
-    border-radius:14px;
-    box-shadow:0 12px 30px rgba(0,0,0,.18);
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius:16px;
+    box-shadow: var(--shadow);
     padding:16px 16px 14px;
     margin-bottom:18px;
-  }
-  .exercise-card img{
-    width:180px; height:180px;
-    object-fit:cover;
-    border-radius:10px;
-    display:block;
-    margin:0 auto 10px;
+    position:relative;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
-  .exercise-topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    margin:0 0 10px;
+  .exercise-card img{
+    width:180px;
+    height:180px;
+    object-fit:cover;
+    border-radius:14px;
+    display:block;
+    margin:0 auto 10px;
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow: 0 14px 34px rgba(0,0,0,.55);
   }
+
   .exercise-title{
-    flex:1;
     text-align:center;
     font-size:18px;
-    font-weight:900;
-    letter-spacing:.3px;
-    margin:0;
-    color:#111;
-  }
-  .card-menu-btn{
-    border:1px solid #e6e6e6;
-    background:#fff;
-    border-radius:12px;
-    width:42px;
-    height:42px;
     font-weight:950;
-    font-size:18px;
-    line-height:1;
-    cursor:pointer;
-    box-shadow:0 6px 18px rgba(0,0,0,.06);
-    -webkit-tap-highlight-color: transparent;
+    letter-spacing:.35px;
+    margin:0 0 10px;
   }
-  .card-menu-btn:active{ transform: scale(.98); }
+
+  .exercise-actions{
+    display:flex;
+    gap:10px;
+    margin:10px 0 6px;
+  }
+  .exercise-actions button{
+    flex:1;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    color: var(--text);
+    font-weight:950;
+    cursor:pointer;
+    box-shadow: 0 12px 28px rgba(0,0,0,.45);
+  }
+  .exercise-actions .danger{
+    border-color: rgba(255,92,110,.35);
+    background: linear-gradient(180deg, rgba(255,92,110,.18), rgba(255,92,110,.08));
+  }
 
   .chart-wrapper{
     display:inline-block;
     width:fit-content;
-    background:#fff;
-    border-radius:10px;
-    box-shadow:0 6px 20px rgba(0,0,0,.06);
-    border:1px solid #e6e6e6;
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+    border-radius:14px;
+    box-shadow: 0 14px 34px rgba(0,0,0,.45);
+    border:1px solid rgba(255,255,255,.12);
+    overflow:hidden;
   }
   .chart-wrapper + .chart-wrapper{ display:block; margin-top:12px; }
 
@@ -205,519 +326,498 @@
     grid-template-columns:repeat(5,72px);
     grid-auto-rows:38px;
     gap:1px;
-    background:#f0f0f0;
+    background: rgba(255,255,255,.06);
   }
+
   .cell{
-    background:#fff;
+    background: rgba(12,16,22,.70);
+    color: var(--text);
     display:flex;
     align-items:center;
     justify-content:center;
     font-size:13px;
-    font-weight:500;
+    font-weight:650;
     padding:2px;
     user-select:none;
   }
-  .chart-label{ font-weight:900; letter-spacing:.3px; color:#444; }
+
+  .chart-label{
+    font-weight:950;
+    letter-spacing:.35px;
+    color: var(--gold2);
+    background: linear-gradient(180deg, rgba(215,180,106,.18), rgba(12,16,22,.70));
+  }
 
   .editable{
-    background:#fafafa;
-    border-bottom:1px solid #ddd;
+    background: rgba(255,255,255,.06);
+    border-bottom: 1px solid rgba(255,255,255,.14);
     cursor:text;
-    font-weight:800;
-    min-height:38px;
+    font-weight:850;
   }
-  .cell:active{ background:#f1f5ff; }
-
   .editable input{
-    width:100%; height:100%;
-    border:0; outline:none;
+    width:100%;
+    height:100%;
+    border:0;
+    outline:none;
     background:transparent;
     text-align:center;
     font:inherit;
-    color:inherit;
+    color: var(--text);
     padding:2px 6px;
     -webkit-appearance:none;
     appearance:none;
-    font-size:16px;
-    font-weight:900;
   }
   .editable:focus-within{
-    background:#fff;
-    border-bottom-color:#999;
+    background: rgba(255,255,255,.10);
+    border-bottom-color: rgba(61,214,198,.55);
     outline:none;
   }
 
-  .plate{ font-weight:700; color:#444; transition:background .15s ease; }
-  .plate.active{ background:#eef3ff; color:#1f3fbf; }
+  .plate{
+    font-weight:850;
+    color: rgba(255,255,255,.82);
+    transition:background .15s ease, color .15s ease;
+  }
+  .plate.active{
+    background: linear-gradient(180deg, rgba(61,214,198,.16), rgba(215,180,106,.12));
+    color: #ffffff;
+  }
+
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.68);
+    z-index:3000;
+    display:none;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .modal{
+    position:fixed;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    z-index:3001;
+    width:min(560px, 92vw);
+    background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.04));
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:16px;
+    box-shadow: var(--shadow);
+    padding:14px;
+    display:none;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .modal h3{
+    margin:6px 0 10px;
+    font-size:16px;
+    font-weight:950;
+    letter-spacing:.25px;
+  }
+  .modal .row{
+    display:flex;
+    gap:10px;
+    margin:10px 0;
+  }
+  .modal input{
+    width:100%;
+    padding:12px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(12,16,22,.55);
+    color: var(--text);
+    font-weight:800;
+    font-size:14px;
+    outline:none;
+  }
+  .modal input:focus{
+    border-color: rgba(61,214,198,.55);
+    box-shadow: 0 0 0 3px rgba(61,214,198,.14);
+  }
+
+  /* file input styling (kept simple, matches modal) */
+  .modal input[type="file"]{
+    padding:10px;
+    font-size:13px;
+    font-weight:850;
+    cursor:pointer;
+  }
+
+  .modal .hint{
+    font-size:12px;
+    opacity:.82;
+    line-height:1.25;
+    margin-top:2px;
+  }
+
+  .modal .actions{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+  }
+  .modal .actions button{
+    flex:1;
+    padding:11px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    color: var(--text);
+    font-weight:950;
+    cursor:pointer;
+    box-shadow: 0 12px 28px rgba(0,0,0,.45);
+  }
+  .modal .actions .danger{
+    border-color: rgba(255,92,110,.35);
+    background: linear-gradient(180deg, rgba(255,92,110,.18), rgba(255,92,110,.08));
+  }
 
   @media (max-width:420px){
     .chart{ grid-template-columns:repeat(5,64px); }
-  }
-
-  #kbdDoneBar{
-    position:fixed; left:0; right:0; bottom:0;
-    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-    background:rgba(255,255,255,.92);
-    border-top:1px solid #e6e6e6;
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
-    display:none;
-    z-index:2000;
-  }
-  #kbdDoneBtn{
-    padding:10px 16px;
-    border-radius:12px;
-    border:1px solid #ddd;
-    background:#fff;
-    font-weight:900;
-    cursor:pointer;
-    box-shadow:0 6px 18px rgba(0,0,0,.06);
-    -webkit-tap-highlight-color: transparent;
-  }
-  #kbdDoneBtn:active{ transform: scale(.98); }
-
-  .actionBtn{
-    padding:14px 14px;
-    border-radius:14px;
-    border:1px solid #ddd;
-    background:#fff;
-    font-weight:950;
-    cursor:pointer;
-    -webkit-tap-highlight-color: transparent;
-    box-shadow:0 10px 26px rgba(0,0,0,.10);
-  }
-  .actionBtn:active{ transform:scale(.99); }
-  .actionBtn.primary{ border-color: rgba(31,63,191,.25); background:#eef3ff; }
-  .actionBtn.danger{ border-color:#eee; background:#fafafa; color:#333; }
-
-  #exportFallback{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.60);
-    display:none; z-index:3000;
-    padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
-  }
-  #exportFallback .box{
-    max-width:680px;
-    margin:24px auto;
-    background:#fff;
-    border-radius:18px;
-    box-shadow:0 30px 80px rgba(0,0,0,.4);
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-  }
-  #exportFallback .titleRow{
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-  }
-  #exportFallback .title{ font-weight:950; font-size:16px; color:#111; }
-  #exportFallback .desc{ font-size:13px; color:#444; line-height:1.35; }
-  #exportFallback .actions{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:10px;
-  }
-  @media (max-width:420px){
-    #exportFallback .actions{ grid-template-columns: 1fr; }
-  }
-  #exportTextWrap{ display:none; gap:8px; flex-direction:column; }
-  #exportText{
-    width:100%;
-    height:260px;
-    font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    font-size:12px;
-    padding:10px;
-    border-radius:12px;
-    border:1px solid #ddd;
-  }
-  .tinyLinkBtn{
-    border:0;
-    background:transparent;
-    color:#1f3fbf;
-    font-weight:900;
-    cursor:pointer;
-    padding:6px 0;
-    text-align:left;
-  }
-
-  #addExerciseModal{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.60);
-    display:none; z-index:3500;
-    padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
-  }
-  #addExerciseModal .box{
-    max-width:680px;
-    margin:24px auto;
-    background:#fff;
-    border-radius:18px;
-    box-shadow:0 30px 80px rgba(0,0,0,.4);
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-  }
-  #addExerciseModal .row{
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-  }
-  #addExerciseModal label{ font-weight:900; font-size:13px; }
-  #addExerciseModal input, #addExerciseModal select{
-    padding:12px;
-    border-radius:12px;
-    border:1px solid #ddd;
-    font-size:16px;
-    font-weight:900;
-    width:100%;
-    box-sizing:border-box;
-  }
-
-  #actionSheet{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.45);
-    display:none; z-index:3600;
-    padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
-  }
-  #actionSheet .sheet{
-    max-width:680px;
-    margin:auto;
-    background:rgba(255,255,255,.92);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-radius:18px;
-    box-shadow:0 30px 80px rgba(0,0,0,.35);
-    overflow:hidden;
-  }
-  #actionSheet .sheetHead{
-    padding:14px 14px 10px;
-    border-bottom:1px solid rgba(0,0,0,.08);
-  }
-  #actionSheet .sheetTitle{ font-weight:950; font-size:16px; color:#111; }
-  #actionSheet .sheetSub{ margin-top:4px; font-size:12px; color:#555; }
-  #actionSheet .sheetBtns{ display:flex; flex-direction:column; }
-  #actionSheet .sheetBtn{
-    padding:16px 14px;
-    border:0;
-    background:transparent;
-    font-weight:950;
-    font-size:16px;
-    text-align:left;
-    cursor:pointer;
-  }
-  #actionSheet .sheetBtn + .sheetBtn{ border-top:1px solid rgba(0,0,0,.08); }
-  #actionSheet .sheetBtn:active{ background:rgba(0,0,0,.06); }
-  #actionSheet .danger{ color:#c01919; }
-  #actionSheet .cancel{
-    margin-top:10px;
-    background:rgba(255,255,255,.92);
-    border-radius:18px;
-    overflow:hidden;
-  }
-
-  #toast{
-    position:fixed;
-    left:50%;
-    bottom: calc(20px + env(safe-area-inset-bottom));
-    transform: translateX(-50%);
-    background: rgba(0,0,0,.82);
-    color:#fff;
-    padding:10px 12px;
-    border-radius:999px;
-    font-weight:900;
-    font-size:13px;
-    z-index:4000;
-    display:none;
-    box-shadow:0 18px 40px rgba(0,0,0,.35);
   }
 </style>
 </head>
 
 <body>
 
-<div class="thumbnail-container" onclick="openGroup('legs')">
-  <img src="https://jessicaautumn.com/wp-content/uploads/2019/06/10-Minute-Workout-For-The-Perfect-Bubble-Butt.png" loading="lazy">
-  <div class="label">Legs / Glutes</div>
-</div>
-<div class="thumbnail-container" onclick="openGroup('back')">
-  <img src="https://betterme.world/articles/wp-content/uploads/2023/04/shutterstock_1654270861.jpg" loading="lazy">
-  <div class="label">Back</div>
-</div>
-<div class="thumbnail-container" onclick="openGroup('biceps')">
-  <img src="https://i.pinimg.com/736x/e4/fd/2e/e4fd2e34aec8c4f86e10fceb79fe1bed.jpg" loading="lazy">
-  <div class="label">Biceps</div>
-</div>
-<div class="thumbnail-container" onclick="openGroup('chest')">
-  <img src="https://hips.hearstapps.com/hmg-prod/images/766/articles/2017/10/benchpress-1508589156.jpg" loading="lazy">
-  <div class="label">Chest</div>
-</div>
-<div class="thumbnail-container" onclick="openGroup('shoulders')">
-  <img src="https://media.istockphoto.com/id/1370070773/photo/fitness.jpg?s=612x612&w=0&k=20&c=FjKgCTJnlLUV8V0ftf0rgsjKgUPD83hWZQURViRRBmk=" loading="lazy">
-  <div class="label">Shoulders</div>
-</div>
-<div class="thumbnail-container" onclick="openGroup('triceps')">
-  <img src="https://t4.ftcdn.net/jpg/01/70/23/39/360_F_170233939_NAVDp5d9kTWMwthTNC3ZJiwqxrKOfdUs.jpg" loading="lazy">
-  <div class="label">Triceps</div>
-</div>
+<div id="groupsRoot"></div>
 
 <div class="controls">
+  <button onclick="addMuscleGroup()">+ Add Muscle Group</button>
+  <button class="grid-btn" id="gridToggleBtn" onclick="toggleGrid()">Grid: 3 Across</button>
   <button onclick="exportData()">Export</button>
-  <button onclick="openAddExercise()">Add Exercise</button>
   <input type="file" id="importFile" accept="application/json" hidden>
   <button onclick="document.getElementById('importFile').click()">Import</button>
-  <button onclick="resetAll()">Reset</button>
+  <button class="reset-btn" onclick="resetBabeSculpting()">⚠️ RESET WORKOUT DATA ⚠️</button>
 </div>
 
 <div class="overlay" onclick="closePanel()"></div>
 <div id="panel"></div>
 
-<div id="kbdDoneBar">
-  <div style="display:flex; justify-content:flex-end; gap:10px;">
-    <button id="kbdDoneBtn" type="button">Done</button>
-  </div>
-</div>
-
-<div id="exportFallback" onclick="closeExportFallback()">
-  <div class="box" onclick="event.stopPropagation()">
-    <div class="titleRow">
-      <div class="title">Export Workout Data</div>
-      <button class="actionBtn danger" style="padding:10px 12px; border-radius:12px;" type="button" onclick="closeExportFallback()">Close</button>
-    </div>
-
-    <div class="desc">
-      Fastest: tap <b>Share</b> to save/send your <code>.json</code>. If Share isn’t available, tap <b>Copy</b>.
-    </div>
-
-    <div class="actions">
-      <button id="shareBtn" class="actionBtn primary" type="button" onclick="shareExport()">Share</button>
-      <button class="actionBtn" type="button" onclick="copyExportText()">Copy</button>
-    </div>
-
-    <button class="tinyLinkBtn" type="button" onclick="toggleExportDetails()">Show export text</button>
-
-    <div id="exportTextWrap">
-      <textarea id="exportText" spellcheck="false"></textarea>
-    </div>
-  </div>
-</div>
-
-<div id="addExerciseModal" onclick="closeAddExercise()">
-  <div class="box" onclick="event.stopPropagation()">
-    <div class="row">
-      <div style="font-weight:950;font-size:16px;">Add Exercise</div>
-      <button class="actionBtn danger" style="padding:10px 12px; border-radius:12px;"
-        type="button" onclick="closeAddExercise()">Close</button>
-    </div>
-
-    <label>Muscle Group</label>
-    <select id="addGroup">
-      <option value="legs">Legs/Glutes</option>
-      <option value="back">Back</option>
-      <option value="biceps">Biceps</option>
-      <option value="chest">Chest</option>
-      <option value="shoulders">Shoulders</option>
-      <option value="triceps">Triceps</option>
-    </select>
-
-    <label>Exercise Name</label>
-    <input id="addName" type="text" placeholder="Example: Seated calf raise">
-
-    <label>Image URL (optional)</label>
-    <input id="addImg" type="url" placeholder="https://...">
-
-    <button class="actionBtn primary" type="button" onclick="saveNewExercise()">Save Exercise</button>
-  </div>
-</div>
-
-<div id="actionSheet" onclick="closeActionSheet()">
-  <div class="sheet" onclick="event.stopPropagation()">
-    <div class="sheetHead">
-      <div class="sheetTitle" id="asTitle">Exercise</div>
-      <div class="sheetSub" id="asSub">Exercise options</div>
-    </div>
-
-    <div class="sheetBtns">
-      <button class="sheetBtn" type="button" onclick="renameExercise()">Rename</button>
-      <button class="sheetBtn" type="button" onclick="changeExerciseImage()">Change image URL</button>
-      <button class="sheetBtn danger" type="button" onclick="deleteExercise()">Delete exercise</button>
-    </div>
-  </div>
-
-  <div class="cancel sheet" style="max-width:680px;" onclick="event.stopPropagation()">
-    <button class="sheetBtn" type="button" onclick="closeActionSheet()">Cancel</button>
-  </div>
-</div>
-
-<div id="toast"></div>
+<div id="modalOverlay" class="modal-overlay" onclick="closeModal()"></div>
+<div id="modal" class="modal" role="dialog" aria-modal="true"></div>
 
 <script>
-const DATA = {
-  legs: [
-    { name:'Leg curl', img:'https://www.hoistfitness.com/cdn/shop/files/RS-2408_FINISHSIDE2_resized.png' },
-    { name:'Leg press', img:'https://i.ytimg.com/vi/n2ng6LCp3yk/hq720.jpg' },
-    { name:'Hip Spread', img:'https://blackbearfitness.co.uk/cdn/shop/files/Untitled-design33-1_cleanup.png' },
-    { name:'Hip Squeeze', img:'https://extremefitness.co.uk/wp-content/uploads/Untitled-design29.jpg' },
-    { name:'Leg Extensions', img:'https://cffstrengthequipment.com/cdn/shop/products/hoist_leg_extension_rs_1401_a.1_1024x1024.jpg' },
-    { name:'Booty squats', img:'https://www.shutterstock.com/image-photo/woman-training-fitness-rubber-band-260nw-2210643481.jpg' }
-  ],
-  back: [
-    { name:'Row (triangle)', img:'https://i.ytimg.com/vi/hxdhLPCCJQI/maxresdefault.jpg' },
-    { name:'Row (bar)', img:'https://i.ytimg.com/vi/9_35TQNqm7Q/hqdefault.jpg' },
-    { name:'Pull down (triangle)', img:'https://dungcutheduc.vn/images/close-grip-lat-pulldown.jpg' },
-    { name:'Pull down (bar)', img:'https://i.vimeocdn.com/video/867314588.webp' },
-    { name:'Face pull', img:'https://i.pinimg.com/736x/f3/68/85/f3688525e50f2814a74990a1a06b4895.jpg' },
-    { name:'Rear Delt Flyes', img:'https://www.buyandsellfitness.com/cdn/shop/products/Rear-Delt-Finsh_1024x1024.jpg' }
-  ],
-  biceps: [
-    { name:'Hammer curl dumbbell', img:'https://julielohre.com/wp-content/uploads/2018/07/Bicep-Hammer-Curl.jpg' },
-    { name:'Open hand curl dumbbell', img:'https://kefl.co.uk/cdn/shop/articles/best-dumbbell-exercises-for-building-muscle-148250.jpg' },
-    { name:'Rope curl', img:'https://img.livestrong.com/375/cme-data/getty/d98f17ab178a4804b614028dfa95278e.jpg' },
-    { name:'Drag curls', img:'https://i.ytimg.com/vi/1n_2P4OR-0Q/maxresdefault.jpg' }
-  ],
-  chest: [
-    { name:'Machine chest press', img:'https://t4.ftcdn.net/jpg/03/00/96/39/360_F_300963984.jpg' },
-    { name:'Chest flyes', img:'https://workouthealthy.com/cdn/shop/files/BS-S2PEC.webp' }
-  ],
-  shoulders: [
-    { name:'Shoulder press', img:'https://vtasfitnesscentre.com/wp-content/uploads/2021/03/Dumbbell-Shoulder-Press.jpg' },
-    { name:'Lateral raise', img:'https://images.ctfassets.net/8urtyqugdt2l/1EG31PaEzRIWNnuW9VeXcI/29ca964acdaf4d51494ca515971093f9/tile-image-how-to-do-lateral-raises.jpg' }
-  ],
-  triceps: [
-    { name:'Rope triceps', img:'https://s3assets.skimble.com/assets/2674907/image_full.jpg' },
-    { name:'Triangle tricep push down', img:'https://images.squarespace-cdn.com/tricep.jpg' },
-    { name:'Dip Machine', img:'https://s3.amazonaws.com/prod.skimble/assets/1495083/image_iphone.jpg' }
-  ]
-};
+/* =======================
+   STORAGE + DEFAULT DATA
+======================= */
+const APP_KEY = 'BSCULPT::APPDATA::v1';
+const KEY_PREFIX = 'BSCULPT::';
+const CHART_ORDER = ['Warm Up','1','2','3'];
+const LONG_PRESS_MS = 550;
+const GRID_KEY = 'BSCULPT::GRIDCOLS::v1';
 
-const GROUP_LABELS = {
-  legs:"Legs/Glutes",
-  back:"Back",
-  biceps:"Biceps",
-  chest:"Chest",
-  shoulders:"Shoulders",
-  triceps:"Triceps"
-};
-
-const EXDB_KEY = "BSCULPT::EXERCISE_DB_V1";
-
-function makeId(){
-  return "ex_" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+function uid(){
+  return 'g_' + Math.random().toString(16).slice(2) + Date.now().toString(16);
 }
-function getExerciseDB(){
+
+function defaultAppData(){
+  return {
+    version: 1,
+    groups: [
+      {
+        id: uid(),
+        name: 'Legs/Glutes',
+        img: 'https://jessicaautumn.com/wp-content/uploads/2019/06/10-Minute-Workout-For-The-Perfect-Bubble-Butt.png',
+        exercises: [
+          { id: uid(), name:'Leg curl', img:'https://www.hoistfitness.com/cdn/shop/files/RS-2408_FINISHSIDE2_resized.png' },
+          { id: uid(), name:'Leg press', img:'https://i.ytimg.com/vi/n2ng6LCp3yk/hq720.jpg' },
+          { id: uid(), name:'Hip Spread', img:'https://blackbearfitness.co.uk/cdn/shop/files/Untitled-design33-1_cleanup.png' },
+          { id: uid(), name:'Hip Squeeze', img:'https://extremefitness.co.uk/wp-content/uploads/Untitled-design29.jpg' },
+          { id: uid(), name:'Leg Extensions', img:'https://cffstrengthequipment.com/cdn/shop/products/hoist_leg_extension_rs_1401_a.1_1024x1024.jpg' },
+          { id: uid(), name:'Booty squats', img:'https://www.shutterstock.com/image-photo/woman-training-fitness-rubber-band-260nw-2210643481.jpg' }
+        ]
+      },
+      {
+        id: uid(),
+        name: 'Back',
+        img: 'https://betterme.world/articles/wp-content/uploads/2023/04/shutterstock_1654270861.jpg',
+        exercises: [
+          { id: uid(), name:'Row (triangle)', img:'https://i.ytimg.com/vi/hxdhLPCCJQI/maxresdefault.jpg' },
+          { id: uid(), name:'Row (bar)', img:'https://i.ytimg.com/vi/9_35TQNqm7Q/hqdefault.jpg' },
+          { id: uid(), name:'Pull down (triangle)', img:'https://dungcutheduc.vn/images/close-grip-lat-pulldown.jpg' },
+          { id: uid(), name:'Pull down (bar)', img:'https://i.vimeocdn.com/video/867314588.webp' },
+          { id: uid(), name:'Face pull', img:'https://i.pinimg.com/736x/f3/68/85/f3688525e50f2814a74990a1a06b4895.jpg' },
+          { id: uid(), name:'Rear Delt Flyes', img:'https://www.buyandsellfitness.com/cdn/shop/products/Rear-Delt-Finsh_1024x1024.jpg' }
+        ]
+      },
+      {
+        id: uid(),
+        name: 'Biceps',
+        img: 'https://i.pinimg.com/736x/e4/fd/2e/e4fd2e34aec8c4f86e10fceb79fe1bed.jpg',
+        exercises: [
+          { id: uid(), name:'Hammer curl dumbbell', img:'https://julielohre.com/wp-content/uploads/2018/07/Bicep-Hammer-Curl.jpg' },
+          { id: uid(), name:'Open hand curl dumbbell', img:'https://kefl.co.uk/cdn/shop/articles/best-dumbbell-exercises-for-building-muscle-148250.jpg' },
+          { id: uid(), name:'Rope curl', img:'https://img.livestrong.com/375/cme-data/getty/d98f17ab178a4804b614028dfa95278e.jpg' },
+          { id: uid(), name:'Drag curls', img:'https://i.ytimg.com/vi/1n_2P4OR-0Q/maxresdefault.jpg' }
+        ]
+      },
+      {
+        id: uid(),
+        name: 'Chest',
+        img: 'https://hips.hearstapps.com/hmg-prod/images/766/articles/2017/10/benchpress-1508589156.jpg',
+        exercises: [
+          { id: uid(), name:'Machine chest press', img:'https://t4.ftcdn.net/jpg/03/00/96/39/360_F_300963984.jpg' },
+          { id: uid(), name:'Chest flyes', img:'https://workouthealthy.com/cdn/shop/files/BS-S2PEC.webp' }
+        ]
+      },
+      {
+        id: uid(),
+        name: 'Shoulders',
+        img: 'https://media.istockphoto.com/id/1370070773/photo/fitness.jpg?s=612x612&w=0&k=20&c=FjKgCTJnlLUV8V0ftf0rgsjKgUPD83hWZQURViRRBmk=',
+        exercises: [
+          { id: uid(), name:'Shoulder press', img:'https://vtasfitnesscentre.com/wp-content/uploads/2021/03/Dumbbell-Shoulder-Press.jpg' },
+          { id: uid(), name:'Lateral raise', img:'https://images.ctfassets.net/8urtyqugdt2l/1EG31PaEzRIWNnuW9VeXcI/29ca964acdaf4d51494ca515971093f9/tile-image-how-to-do-lateral-raises.jpg' }
+        ]
+      },
+      {
+        id: uid(),
+        name: 'Triceps',
+        img: 'https://t4.ftcdn.net/jpg/01/70/23/39/360_F_170233939_NAVDp5d9kTWMwthTNC3ZJiwqxrKOfdUs.jpg',
+        exercises: [
+          { id: uid(), name:'Rope triceps', img:'https://s3assets.skimble.com/assets/2674907/image_full.jpg' },
+          { id: uid(), name:'Triangle tricep push down', img:'https://images.squarespace-cdn.com/tricep.jpg' },
+          { id: uid(), name:'Dip Machine', img:'https://s3.amazonaws.com/prod.skimble/assets/1495083/image_iphone.jpg' }
+        ]
+      }
+    ]
+  };
+}
+
+function loadAppData(){
   try{
-    const db = JSON.parse(localStorage.getItem(EXDB_KEY) || "");
-    if(db && typeof db === "object") return db;
-  }catch(e){}
-  return null;
+    const raw = localStorage.getItem(APP_KEY);
+    if(!raw) {
+      const d = defaultAppData();
+      localStorage.setItem(APP_KEY, JSON.stringify(d));
+      return d;
+    }
+    const parsed = JSON.parse(raw);
+    if(!parsed || !Array.isArray(parsed.groups)) throw new Error('bad');
+    return parsed;
+  }catch{
+    const d = defaultAppData();
+    localStorage.setItem(APP_KEY, JSON.stringify(d));
+    return d;
+  }
 }
-function setExerciseDB(db){
-  localStorage.setItem(EXDB_KEY, JSON.stringify(db));
-}
-function seedExerciseDBIfMissing(){
-  const existing = getExerciseDB();
-  if(existing) return;
+function saveAppData(data){ localStorage.setItem(APP_KEY, JSON.stringify(data)); }
 
-  const db = {};
-  Object.keys(DATA).forEach(groupKey=>{
-    db[groupKey] = (DATA[groupKey] || []).map(ex => ({ id: makeId(), name: ex.name, img: ex.img }));
+let APP = loadAppData();
+let CURRENT_GROUP_ID = null;
+
+/* =======================
+   GRID TOGGLE (1/2/3)
+======================= */
+function getGridCols(){
+  const n = parseInt(localStorage.getItem(GRID_KEY) || '3', 10);
+  return [1,2,3].includes(n) ? n : 3;
+}
+function applyGridCols(n){
+  const cols = [1,2,3].includes(n) ? n : 3;
+  document.documentElement.style.setProperty('--cols', String(cols));
+  localStorage.setItem(GRID_KEY, String(cols));
+  const btn = document.getElementById('gridToggleBtn');
+  if(btn) btn.textContent = `Grid: ${cols} Across`;
+  queueLabelFit();
+}
+function toggleGrid(){
+  const cur = getGridCols();
+  const next = cur === 3 ? 1 : cur + 1;
+  applyGridCols(next);
+}
+
+/* =======================
+   LABEL AUTO-FIT
+======================= */
+let fitQueued = false;
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+function queueLabelFit(){
+  if(fitQueued) return;
+  fitQueued = true;
+  requestAnimationFrame(()=>{
+    fitQueued = false;
+    fitAllGroupLabels();
   });
-  setExerciseDB(db);
-}
-function getExercisesForGroup(groupKey){
-  const db = getExerciseDB() || {};
-  return (db[groupKey] || []).map(x => ({...x, custom:true}));
-}
-function addExerciseToGroup(groupKey, name, img){
-  const db = getExerciseDB() || {};
-  if(!db[groupKey]) db[groupKey] = [];
-  const exists = db[groupKey].some(e => String(e.name).toLowerCase() === name.toLowerCase());
-  if(exists) return { ok:false, msg:"That exercise already exists in this muscle group." };
-  db[groupKey].push({ id: makeId(), name, img: img || "https://via.placeholder.com/400?text=Exercise" });
-  setExerciseDB(db);
-  return { ok:true };
-}
-function updateExercise(groupKey, exId, patch){
-  const db = getExerciseDB() || {};
-  const list = db[groupKey] || [];
-  const item = list.find(x => x.id === exId);
-  if(!item) return false;
-  if(patch.name !== undefined) item.name = patch.name;
-  if(patch.img !== undefined) item.img = patch.img;
-  setExerciseDB(db);
-  return true;
-}
-function deleteExerciseFromGroup(groupKey, exId){
-  const db = getExerciseDB() || {};
-  const list = db[groupKey] || [];
-  db[groupKey] = list.filter(x => x.id !== exId);
-  setExerciseDB(db);
 }
 
-function openGroup(groupKey){
-  openExercises(GROUP_LABELS[groupKey] || groupKey, getExercisesForGroup(groupKey), groupKey);
+function fitLabelFont(labelEl){
+  if(!labelEl) return;
+  const tile = labelEl.closest('.thumbnail-container');
+  if(!tile) return;
+
+  const tileW = tile.clientWidth || 200;
+  const textLen = (labelEl.textContent || '').trim().length;
+
+  const baseMax = clamp(Math.floor(tileW / 10), 14, 24);
+  const lengthPenalty = clamp(Math.floor((textLen - 10) / 4), 0, 6);
+  const maxPx = clamp(baseMax - lengthPenalty, 12, 24);
+  const minPx = 10;
+
+  labelEl.style.fontSize = maxPx + 'px';
+  let size = maxPx;
+  while(size > minPx && labelEl.scrollWidth > labelEl.clientWidth){
+    size -= 1;
+    labelEl.style.fontSize = size + 'px';
+  }
 }
 
+function fitAllGroupLabels(){
+  document.querySelectorAll('#groupsRoot .thumbnail-container .label')
+    .forEach(fitLabelFont);
+}
+window.addEventListener('resize', queueLabelFit);
+
+/* =======================
+   LONG-PRESS HELPERS
+======================= */
+function hideAllGroupActions(){
+  document.querySelectorAll('.thumbnail-container.show-actions')
+    .forEach(el => el.classList.remove('show-actions'));
+}
+
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('.tile-actions')) return;
+  const inTile = e.target.closest('.thumbnail-container');
+  if(!inTile) hideAllGroupActions();
+});
+
+document.addEventListener('contextmenu', (e)=>{
+  if(e.target.closest('.thumbnail-container')) e.preventDefault();
+}, {passive:false});
+
+function attachLongPressHandlers(tile, groupId){
+  let timer = null;
+
+  function startPress(){
+    clearTimeout(timer);
+    timer = setTimeout(()=>{
+      hideAllGroupActions();
+      tile.classList.add('show-actions');
+      tile.style.transform = 'translateY(-2px) scale(1.02)';
+      setTimeout(()=>{ tile.style.transform=''; }, 140);
+    }, LONG_PRESS_MS);
+  }
+  function endPress(){ clearTimeout(timer); }
+
+  tile.addEventListener('touchstart', startPress, {passive:true});
+  tile.addEventListener('touchend', endPress, {passive:true});
+  tile.addEventListener('touchmove', endPress, {passive:true});
+  tile.addEventListener('touchcancel', endPress, {passive:true});
+
+  tile.addEventListener('mousedown', startPress);
+  tile.addEventListener('mouseup', endPress);
+  tile.addEventListener('mouseleave', endPress);
+
+  tile.addEventListener('click', (e)=>{
+    if(e.target.closest('.tile-actions')) return;
+
+    if(tile.classList.contains('show-actions')){
+      tile.classList.remove('show-actions');
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    openGroupPanel(groupId);
+  });
+}
+
+/* =======================
+   RENDER GROUP TILES
+======================= */
 function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
-  }[m]));
+  return String(s)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
 }
 
-function openExercises(groupLabel, exercises, groupKey){
-  document.querySelector('.overlay').style.display='block';
-  document.body.style.overflow='hidden';
+function renderGroups(){
+  const root = document.getElementById('groupsRoot');
+  root.innerHTML = '';
 
-  const panel=document.getElementById('panel');
-  panel.classList.add('show');
+  APP.groups.forEach(g=>{
+    const tile = document.createElement('div');
+    tile.className = 'thumbnail-container';
 
-  panel.innerHTML = `
-    <div class="panel-header">
-      <div class="panel-title">${groupLabel}</div>
-      <button class="panel-close" type="button" onclick="closePanel()">Close</button>
-    </div>
-    <div class="panel-body" id="panelBody"></div>
-  `;
-
-  const body = document.getElementById('panelBody');
-
-  exercises.forEach(ex=>{
-    const card=document.createElement('div');
-    card.className='exercise-card';
-
-    const menuBtn =
-      `<button class="card-menu-btn" type="button"
-         onclick="openActionSheet(event,'${groupKey}','${ex.id}','${escapeHtml(ex.name)}')">⋯</button>`;
-
-    card.innerHTML = `
-      <img src="${ex.img}" loading="lazy">
-      <div class="exercise-topbar">
-        <span style="width:42px;height:42px;display:inline-block;"></span>
-        <div class="exercise-title">${ex.name}</div>
-        ${menuBtn}
+    tile.innerHTML = `
+      <div class="tile-actions">
+        <button class="icon-btn" title="Edit group"
+          onclick="event.stopPropagation(); editMuscleGroup('${g.id}')">✎</button>
+        <button class="icon-btn danger" title="Delete group"
+          onclick="event.stopPropagation(); deleteMuscleGroup('${g.id}')">🗑</button>
       </div>
+      <img src="${g.img || ''}" alt="">
+      <div class="label">${escapeHtml(g.name)}</div>
     `;
 
-    ['Warm Up','1','2','3'].forEach(label=>card.appendChild(buildChart(groupLabel,ex.name,label)));
-    body.appendChild(card);
+    const img = tile.querySelector('img');
+    if(img){
+      img.addEventListener('load', queueLabelFit, {once:true});
+      img.addEventListener('error', queueLabelFit, {once:true});
+    }
+
+    attachLongPressHandlers(tile, g.id);
+    root.appendChild(tile);
   });
 
-  wireKeyboardDone();
+  queueLabelFit();
+}
+
+/* =======================
+   GROUP PANEL
+======================= */
+function openGroupPanel(groupId){
+  CURRENT_GROUP_ID = groupId;
+  const g = APP.groups.find(x=>x.id === groupId);
+  if(!g) return;
+
+  document.querySelector('.overlay').style.display='block';
+  const panel = document.getElementById('panel');
+  panel.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'panel-header';
+  header.innerHTML = `
+    <div class="panel-title">${escapeHtml(g.name)}</div>
+    <div class="panel-actions">
+      <button onclick="addExercise('${g.id}')">+ Add Exercise</button>
+      <button class="danger" onclick="closePanel()">Close</button>
+    </div>
+  `;
+  panel.appendChild(header);
+
+  g.exercises.forEach(ex=>{
+    const card=document.createElement('div');
+    card.className='exercise-card';
+    card.innerHTML=`
+      <img src="${ex.img || ''}" alt="">
+      <div class="exercise-title">${escapeHtml(ex.name)}</div>
+      <div class="exercise-actions">
+        <button onclick="editExercise('${g.id}','${ex.id}')">Edit</button>
+        <button class="danger" onclick="deleteExercise('${g.id}','${ex.id}')">Delete</button>
+      </div>
+    `;
+    CHART_ORDER.forEach(label=>card.appendChild(buildChart(g.name, ex.name, label)));
+    panel.appendChild(card);
+  });
 }
 
 function closePanel(){
   document.querySelector('.overlay').style.display='none';
-  const panel=document.getElementById('panel');
-  panel.classList.remove('show');
-  panel.innerHTML='';
-  document.body.style.overflow='';
-
-  const bar = document.getElementById('kbdDoneBar');
-  if(bar) bar.style.display='none';
+  document.getElementById('panel').innerHTML='';
+  CURRENT_GROUP_ID = null;
 }
 
+/* =======================
+   WORKOUT ENTRY CHART
+======================= */
 function safeKey(str){ return String(str).replace(/\s+/g,' ').trim(); }
 
-function buildChart(group, ex, label){
-  const key=`BSCULPT::${safeKey(group)}::${safeKey(ex)}::${safeKey(label)}`;
+function buildChart(groupName, exName, label){
+  const key=`${KEY_PREFIX}${safeKey(groupName)}::${safeKey(exName)}::${safeKey(label)}`;
   const saved=JSON.parse(localStorage.getItem(key)||'{}');
+
   const wrapper=document.createElement('div');
   wrapper.className='chart-wrapper';
 
@@ -726,13 +826,27 @@ function buildChart(group, ex, label){
       <div class="cell chart-label">${label}</div>
 
       <div class="cell editable" style="grid-column:2/span 2">
-        <input class="rep-input" type="number" inputmode="numeric" step="1" min="0"
-          placeholder="reps" value="${saved.set > 0 ? saved.set : ''}" aria-label="Reps">
+        <input
+          class="rep-input"
+          type="number"
+          inputmode="numeric"
+          step="1"
+          min="0"
+          placeholder="reps"
+          value="${saved.set > 0 ? saved.set : ''}"
+        >
       </div>
 
       <div class="cell editable" style="grid-column:4/span 2">
-        <input class="weight-input" type="number" inputmode="decimal" step="0.5" min="0"
-          placeholder="lbs" value="${saved.weight > 0 ? saved.weight : ''}" aria-label="Weight in lbs">
+        <input
+          class="weight-input"
+          type="number"
+          inputmode="decimal"
+          step="0.5"
+          min="0"
+          placeholder="lbs"
+          value="${saved.weight > 0 ? saved.weight : ''}"
+        >
       </div>
 
       ${[45,25,10,5,2.5].map(p=>`<div class="cell plate" data-w="${p}">${p} × 0</div>`).join('')}
@@ -744,15 +858,17 @@ function buildChart(group, ex, label){
 
   function update(){
     let w=parseFloat(weightInput.value)||0, r=w;
+
     plates.forEach(p=>{
       const pw=+p.dataset.w;
       const c=Math.floor(r/pw); r-=c*pw;
       p.textContent=`${pw} × ${c}`;
       p.classList.toggle('active',c>0);
     });
-    const reps=parseInt(repInput.value,10);
+
+    const reps=parseInt(repInput.value);
     const repsSafe = Number.isFinite(reps) ? reps : 0;
-    localStorage.setItem(key,JSON.stringify({weight:w,set:repsSafe}));
+    localStorage.setItem(key, JSON.stringify({weight:w,set:repsSafe}));
   }
 
   repInput.oninput=update;
@@ -761,288 +877,433 @@ function buildChart(group, ex, label){
   return wrapper;
 }
 
-function wireKeyboardDone(){
-  const bar = document.getElementById('kbdDoneBar');
-  const btn = document.getElementById('kbdDoneBtn');
-  if(!bar || !btn) return;
+/* =======================
+   MODAL HELPERS
+======================= */
+function openModal(html){
+  document.getElementById('modal').innerHTML = html;
+  document.getElementById('modalOverlay').style.display = 'block';
+  document.getElementById('modal').style.display = 'block';
+}
+function closeModal(){
+  document.getElementById('modalOverlay').style.display = 'none';
+  document.getElementById('modal').style.display = 'none';
+  document.getElementById('modal').innerHTML = '';
+}
+function val(id){ return (document.getElementById(id)?.value ?? '').trim(); }
+function fileEl(id){ return document.getElementById(id); }
 
-  const inputs = document.querySelectorAll('#panel input');
-  inputs.forEach(inp=>{
-    inp.addEventListener('focus', ()=> bar.style.display='block');
-    inp.addEventListener('blur', ()=>{
-      setTimeout(()=>{
-        const a=document.activeElement;
-        if(!(a && a.tagName==='INPUT')) bar.style.display='none';
-      }, 80);
+function readFileAsDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> resolve(String(r.result || ''));
+    r.onerror = ()=> reject(new Error('File read error'));
+    r.readAsDataURL(file);
+  });
+}
+
+/* =======================
+   GROUP CRUD (✅ add upload OR URL)
+======================= */
+function addMuscleGroup(){
+  openModal(`
+    <h3>Add Muscle Group</h3>
+    <div class="row"><input id="mgName" placeholder="Group name (ex: Calves)"></div>
+    <div class="row"><input id="mgImg" placeholder="Image URL (optional)"></div>
+    <div class="row"><input id="mgFile" type="file" accept="image/*"></div>
+    <div class="hint">Pick <b>either</b> an Image URL <b>or</b> upload an image. If you upload, it’s saved inside the app.</div>
+    <div class="actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button onclick="confirmAddGroup()">Add</button>
+    </div>
+  `);
+}
+
+async function confirmAddGroup(){
+  const name = val('mgName');
+  let img = val('mgImg');
+  const f = fileEl('mgFile')?.files?.[0];
+
+  if(!name){ alert('Enter a group name.'); return; }
+
+  // If file selected, it wins over URL
+  if(f){
+    try{ img = await readFileAsDataURL(f); }
+    catch{ alert('Could not read image. Try a different file.'); return; }
+  }
+
+  APP.groups.push({ id: uid(), name, img, exercises: [] });
+  saveAppData(APP);
+  closeModal();
+  renderGroups();
+}
+
+function editMuscleGroup(groupId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  if(!g) return;
+
+  openModal(`
+    <h3>Edit Muscle Group</h3>
+    <div class="row"><input id="mgName" placeholder="Group name" value="${escapeHtml(g.name)}"></div>
+    <div class="row"><input id="mgImg" placeholder="Image URL (optional)" value="${escapeHtml(g.img||'')}"></div>
+    <div class="row"><input id="mgFile" type="file" accept="image/*"></div>
+    <div class="hint">To replace the image: paste a URL, or upload a new one. If you upload, it overrides the URL.</div>
+    <div class="actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button onclick="confirmEditGroup('${groupId}')">Save</button>
+    </div>
+  `);
+}
+
+async function confirmEditGroup(groupId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  if(!g) return;
+
+  const newName = val('mgName');
+  let newImg  = val('mgImg');
+  const f = fileEl('mgFile')?.files?.[0];
+
+  if(!newName){ alert('Enter a group name.'); return; }
+
+  if(f){
+    try{ newImg = await readFileAsDataURL(f); }
+    catch{ alert('Could not read image. Try a different file.'); return; }
+  }
+
+  const oldName = g.name;
+  g.name = newName;
+  g.img  = newImg;
+
+  migrateWorkoutKeys_GroupRename(oldName, newName);
+
+  saveAppData(APP);
+  closeModal();
+  renderGroups();
+  if(CURRENT_GROUP_ID === groupId) openGroupPanel(groupId);
+}
+
+function deleteMuscleGroup(groupId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  if(!g) return;
+
+  openModal(`
+    <h3>Delete Muscle Group</h3>
+    <div style="font-weight:900; color:#ffb3bb; margin:6px 0 10px;">
+      Delete "${escapeHtml(g.name)}" and ALL its exercises?
+    </div>
+    <div class="actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button class="danger" onclick="confirmDeleteGroup('${groupId}')">Delete</button>
+    </div>
+  `);
+}
+
+function confirmDeleteGroup(groupId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  if(!g) return;
+
+  g.exercises.forEach(ex=>{
+    CHART_ORDER.forEach(label=>{
+      const k = `${KEY_PREFIX}${safeKey(g.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
+      localStorage.removeItem(k);
     });
   });
 
-  btn.onclick = ()=>{
-    if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    bar.style.display='none';
-  };
+  APP.groups = APP.groups.filter(x=>x.id!==groupId);
+  saveAppData(APP);
+  closeModal();
+  renderGroups();
+  if(CURRENT_GROUP_ID === groupId) closePanel();
 }
 
-function openAddExercise(){
-  document.getElementById('addName').value = "";
-  document.getElementById('addImg').value = "";
-  document.getElementById('addExerciseModal').style.display = "block";
-  setTimeout(()=>document.getElementById('addName').focus(), 60);
-}
-function closeAddExercise(){
-  document.getElementById('addExerciseModal').style.display = "none";
-}
-function saveNewExercise(){
-  const groupKey = document.getElementById('addGroup').value;
-  const name = (document.getElementById('addName').value || "").trim();
-  const img = (document.getElementById('addImg').value || "").trim();
-  if(!name){ alert("Please enter an exercise name."); return; }
-  const res = addExerciseToGroup(groupKey, name, img);
-  if(!res.ok){ alert(res.msg); return; }
-  closeAddExercise();
-  toast("Saved!");
-  openGroup(groupKey);
+/* =======================
+   EXERCISE CRUD (✅ add upload OR URL)
+======================= */
+function addExercise(groupId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  if(!g) return;
+
+  openModal(`
+    <h3>Add Exercise</h3>
+    <div class="row"><input id="exName" placeholder="Exercise name (ex: Calf Raise)"></div>
+    <div class="row"><input id="exImg" placeholder="Image URL (optional)"></div>
+    <div class="row"><input id="exFile" type="file" accept="image/*"></div>
+    <div class="hint">Pick <b>either</b> an Image URL <b>or</b> upload an image. Upload overrides URL.</div>
+    <div class="actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button onclick="confirmAddExercise('${groupId}')">Add</button>
+    </div>
+  `);
 }
 
-let ACTION_CTX = { groupKey:null, exId:null, exName:null };
+async function confirmAddExercise(groupId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  if(!g) return;
 
-function openActionSheet(ev, groupKey, exId, exName){
-  ev.stopPropagation();
-  ACTION_CTX = { groupKey, exId, exName };
-  document.getElementById('asTitle').textContent = exName || "Exercise";
-  document.getElementById('asSub').textContent = "Exercise options";
-  document.getElementById('actionSheet').style.display='block';
-}
-function closeActionSheet(){
-  document.getElementById('actionSheet').style.display='none';
-}
-function renameExercise(){
-  const {groupKey, exId, exName} = ACTION_CTX;
-  const next = prompt("Rename exercise:", exName || "");
-  if(next === null) return;
-  const name = next.trim();
-  if(!name){ alert("Name cannot be empty."); return; }
-  const list = getExercisesForGroup(groupKey);
-  const dup = list.some(x => x.id !== exId && String(x.name).toLowerCase() === name.toLowerCase());
-  if(dup){ alert("That name already exists in this group."); return; }
-  updateExercise(groupKey, exId, { name });
-  closeActionSheet();
-  toast("Renamed!");
-  openGroup(groupKey);
-}
-function changeExerciseImage(){
-  const {groupKey, exId} = ACTION_CTX;
-  const list = getExercisesForGroup(groupKey);
-  const item = list.find(x => x.id === exId);
-  const current = item ? item.img : "";
-  const next = prompt("Paste image URL:", current || "");
-  if(next === null) return;
-  const url = next.trim();
-  if(!url){ alert("Image URL cannot be empty."); return; }
-  updateExercise(groupKey, exId, { img: url });
-  closeActionSheet();
-  toast("Updated image!");
-  openGroup(groupKey);
-}
-function deleteExercise(){
-  const {groupKey, exId, exName} = ACTION_CTX;
-  const ok = confirm(`Delete "${exName}"?`);
-  if(!ok) return;
-  deleteExerciseFromGroup(groupKey, exId);
-  closeActionSheet();
-  toast("Deleted!");
-  openGroup(groupKey);
+  const name = val('exName');
+  let img  = val('exImg');
+  const f = fileEl('exFile')?.files?.[0];
+
+  if(!name){ alert('Enter an exercise name.'); return; }
+
+  if(f){
+    try{ img = await readFileAsDataURL(f); }
+    catch{ alert('Could not read image. Try a different file.'); return; }
+  }
+
+  g.exercises.push({ id: uid(), name, img });
+  saveAppData(APP);
+  closeModal();
+  openGroupPanel(groupId);
 }
 
-const GROUP_ORDER=[
-  {key:'legs',name:'Legs/Glutes'},
-  {key:'back',name:'Back'},
-  {key:'biceps',name:'Biceps'},
-  {key:'chest',name:'Chest'},
-  {key:'shoulders',name:'Shoulders'},
-  {key:'triceps',name:'Triceps'}
-];
-const CHART_ORDER=['Warm Up','1','2','3'];
+function editExercise(groupId, exId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  const ex = g?.exercises.find(e=>e.id===exId);
+  if(!g || !ex) return;
 
-let LAST_EXPORT_JSON = "";
-let LAST_EXPORT_FILE = null;
+  openModal(`
+    <h3>Edit Exercise</h3>
+    <div class="row"><input id="exName" placeholder="Exercise name" value="${escapeHtml(ex.name)}"></div>
+    <div class="row"><input id="exImg" placeholder="Image URL (optional)" value="${escapeHtml(ex.img||'')}"></div>
+    <div class="row"><input id="exFile" type="file" accept="image/*"></div>
+    <div class="hint">To replace the image: paste a URL, or upload a new one. Upload overrides URL.</div>
+    <div class="actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button onclick="confirmEditExercise('${groupId}','${exId}')">Save</button>
+    </div>
+  `);
+}
 
+async function confirmEditExercise(groupId, exId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  const ex = g?.exercises.find(e=>e.id===exId);
+  if(!g || !ex) return;
+
+  const newName = val('exName');
+  let newImg  = val('exImg');
+  const f = fileEl('exFile')?.files?.[0];
+
+  if(!newName){ alert('Enter an exercise name.'); return; }
+
+  if(f){
+    try{ newImg = await readFileAsDataURL(f); }
+    catch{ alert('Could not read image. Try a different file.'); return; }
+  }
+
+  const oldName = ex.name;
+  ex.name = newName;
+  ex.img  = newImg;
+
+  migrateWorkoutKeys_ExerciseRename(g.name, oldName, newName);
+
+  saveAppData(APP);
+  closeModal();
+  openGroupPanel(groupId);
+}
+
+function deleteExercise(groupId, exId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  const ex = g?.exercises.find(e=>e.id===exId);
+  if(!g || !ex) return;
+
+  openModal(`
+    <h3>Delete Exercise</h3>
+    <div style="font-weight:900; color:#ffb3bb; margin:6px 0 10px;">
+      Delete "${escapeHtml(ex.name)}" (Warm Up, 1, 2, 3 data included)?
+    </div>
+    <div class="actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button class="danger" onclick="confirmDeleteExercise('${groupId}','${exId}')">Delete</button>
+    </div>
+  `);
+}
+
+function confirmDeleteExercise(groupId, exId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  const ex = g?.exercises.find(e=>e.id===exId);
+  if(!g || !ex) return;
+
+  CHART_ORDER.forEach(label=>{
+    const k = `${KEY_PREFIX}${safeKey(g.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
+    localStorage.removeItem(k);
+  });
+
+  g.exercises = g.exercises.filter(e=>e.id!==exId);
+  saveAppData(APP);
+  closeModal();
+  openGroupPanel(groupId);
+}
+
+/* =======================
+   KEY MIGRATIONS
+======================= */
+function migrateWorkoutKeys_GroupRename(oldGroup, newGroup){
+  const oldPrefix = `${KEY_PREFIX}${safeKey(oldGroup)}::`;
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(oldPrefix));
+  keys.forEach(oldKey=>{
+    const v = localStorage.getItem(oldKey);
+    const rest = oldKey.slice(oldPrefix.length);
+    const newKey = `${KEY_PREFIX}${safeKey(newGroup)}::${rest}`;
+    localStorage.setItem(newKey, v);
+    localStorage.removeItem(oldKey);
+  });
+}
+
+function migrateWorkoutKeys_ExerciseRename(groupName, oldEx, newEx){
+  const base = `${KEY_PREFIX}${safeKey(groupName)}::`;
+  CHART_ORDER.forEach(label=>{
+    const oldKey = `${base}${safeKey(oldEx)}::${safeKey(label)}`;
+    const v = localStorage.getItem(oldKey);
+    if(v !== null){
+      const newKey = `${base}${safeKey(newEx)}::${safeKey(label)}`;
+      localStorage.setItem(newKey, v);
+      localStorage.removeItem(oldKey);
+    }
+  });
+}
+
+/* =======================
+   EXPORT / IMPORT (supports v4 + older v2)
+======================= */
 function exportData(){
-  const out={meta:{app:'Babe Sculpting',version:6,exportedAt:new Date().toISOString()},groups:[]};
-  out.exerciseDB = getExerciseDB();
+  const out = {
+    meta:{ app:'Babe Sculpting', version:4, exportedAt:new Date().toISOString() },
+    appData: APP,
+    gridCols: getGridCols(),
+    workouts: {}
+  };
 
-  GROUP_ORDER.forEach(g=>{
-    const gb={group:g.name,exercises:[]};
-    const allExercises = getExercisesForGroup(g.key);
+  Object.keys(localStorage).forEach(k=>{
+    if(!k.startsWith(KEY_PREFIX)) return;
+    if(k === APP_KEY) return;
+    if(k === GRID_KEY) return;
 
-    allExercises.forEach(ex=>{
-      const eb={name:ex.name,charts:[]};
-      CHART_ORDER.forEach(l=>{
-        const k=`BSCULPT::${safeKey(g.name)}::${safeKey(ex.name)}::${safeKey(l)}`;
-        const s=JSON.parse(localStorage.getItem(k)||'{}');
-        eb.charts.push({label:l,set:(s.set ?? 0),weight:(s.weight ?? 0)});
-      });
-      gb.exercises.push(eb);
-    });
-
-    out.groups.push(gb);
+    const raw = localStorage.getItem(k);
+    try{
+      out.workouts[k] = JSON.parse(raw);
+    }catch{
+      out.workouts[k] = raw;
+    }
   });
 
-  const json = JSON.stringify(out,null,2);
-  LAST_EXPORT_JSON = json;
-
-  try{
-    LAST_EXPORT_FILE = new File([json], 'babe_sculpting_data.json', { type:'application/json' });
-  }catch(e){
-    LAST_EXPORT_FILE = null;
-  }
-
-  try{
-    const blob=new Blob([json],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download='babe_sculpting_data.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }catch(e){}
-
-  const ua = navigator.userAgent || "";
-  const isiOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-  if(isiOS){
-    showExportFallback(json);
-  }else{
-    toast("Downloaded (if supported).");
-  }
+  const blob = new Blob([JSON.stringify(out,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'babe_sculpting_data.json';
+  a.click();
 }
 
-function showExportFallback(json){
-  const modal=document.getElementById('exportFallback');
-  const textarea=document.getElementById('exportText');
-  const wrap=document.getElementById('exportTextWrap');
-  const shareBtn=document.getElementById('shareBtn');
-
-  textarea.value=json;
-  wrap.style.display='none';
-
-  const canShare = !!(navigator.share);
-  shareBtn.disabled = !canShare;
-  shareBtn.style.opacity = canShare ? '1' : '.55';
-
-  modal.style.display='block';
-  toast(canShare ? "Tap Share to save/send the .json" : "Tap Copy to export");
-}
-function closeExportFallback(){ document.getElementById('exportFallback').style.display='none'; }
-function toggleExportDetails(){
-  const wrap=document.getElementById('exportTextWrap');
-  const btn=document.querySelector('#exportFallback .tinyLinkBtn');
-  const isOpen = wrap.style.display === 'flex';
-  wrap.style.display = isOpen ? 'none' : 'flex';
-  btn.textContent = isOpen ? 'Show export text' : 'Hide export text';
-  if(!isOpen){
-    const t=document.getElementById('exportText');
-    setTimeout(()=>{ t.focus(); t.select(); }, 50);
-  }
-}
-async function shareExport(){
-  if(!navigator.share){ toast("Share not available. Use Copy."); return; }
-  try{
-    if(LAST_EXPORT_FILE && navigator.canShare && navigator.canShare({ files:[LAST_EXPORT_FILE] })){
-      await navigator.share({ title:'Babe Sculpting Export', text:'Workout export (.json)', files:[LAST_EXPORT_FILE] });
-      toast("Shared!");
-      return;
-    }
-    await navigator.share({ title:'Babe Sculpting Export', text: LAST_EXPORT_JSON || '' });
-    toast("Shared!");
-  }catch(err){
-    if(String(err && err.name) !== 'AbortError') toast("Share failed. Use Copy.");
-  }
-}
-async function copyExportText(){
-  const textarea=document.getElementById('exportText');
-  const text=textarea.value;
-  if(!text){ toast("Nothing to copy."); return; }
-
-  try{
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      await navigator.clipboard.writeText(text);
-      toast("Copied!");
-      return;
-    }
-  }catch(e){}
-
-  const wrap=document.getElementById('exportTextWrap');
-  const wasHidden = wrap.style.display === 'none';
-  if(wasHidden) wrap.style.display='flex';
-  textarea.focus(); textarea.select();
-  document.execCommand('copy');
-  if(wasHidden) wrap.style.display='none';
-  toast("Copied!");
-}
-
-document.getElementById('importFile').onchange=e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{
+document.getElementById('importFile').onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
     try{
-      const d=JSON.parse(r.result);
+      const d = JSON.parse(r.result);
 
-      if(d.exerciseDB && typeof d.exerciseDB === "object"){
-        setExerciseDB(d.exerciseDB);
+      // Clear existing workout keys (keep app + grid keys)
+      Object.keys(localStorage).forEach(k=>{
+        if(!k.startsWith(KEY_PREFIX)) return;
+        if(k === APP_KEY) return;
+        if(k === GRID_KEY) return;
+        localStorage.removeItem(k);
+      });
+
+      // ========== NEW FORMAT (v4) ==========
+      if(d && d.appData && Array.isArray(d.appData.groups)){
+        APP = d.appData;
+        saveAppData(APP);
+
+        if(typeof d.gridCols === 'number') applyGridCols(d.gridCols);
+
+        if(d.workouts && typeof d.workouts === 'object'){
+          Object.keys(d.workouts).forEach(k=>{
+            if(!k.startsWith(KEY_PREFIX)) return;
+            if(k === APP_KEY) return;
+            if(k === GRID_KEY) return;
+            const v = d.workouts[k];
+            localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v ?? {}));
+          });
+        }
+
+        alert('Import complete.');
+        renderGroups();
+        closePanel();
+        return;
       }
 
-      if(Array.isArray(d.groups)){
-        d.groups.forEach(g=>g.exercises.forEach(ex=>ex.charts.forEach(c=>{
-          const k=`BSCULPT::${safeKey(g.group)}::${safeKey(ex.name)}::${safeKey(c.label)}`;
-          localStorage.setItem(k,JSON.stringify({weight:(c.weight ?? 0),set:(c.set ?? 0)}));
-        })));
-      }else{
-        Object.keys(d).forEach(k=>k.startsWith('BSCULPT::')&&localStorage.setItem(k,JSON.stringify(d[k])));
+      // ========== OLDER FORMAT (v2) ==========
+      if(d && Array.isArray(d.groups) && d.groups.length){
+        const defaults = defaultAppData().groups;
+        const defByName = (name)=>defaults.find(g=>g.name === name);
+
+        const newGroups = d.groups.map(g=>{
+          const defG = defByName(g.group);
+          const groupImg = defG?.img || '';
+
+          const exercises = (g.exercises || []).map(ex=>{
+            const defEx = defG?.exercises?.find(x=>x.name === ex.name);
+            return { id: uid(), name: ex.name, img: defEx?.img || '' };
+          });
+
+          return { id: uid(), name: g.group, img: groupImg, exercises };
+        });
+
+        APP = { version: 1, groups: newGroups };
+        saveAppData(APP);
+
+        d.groups.forEach(g=>{
+          (g.exercises || []).forEach(ex=>{
+            (ex.charts || []).forEach(c=>{
+              if(!c || !c.label) return;
+              const k = `${KEY_PREFIX}${safeKey(g.group)}::${safeKey(ex.name)}::${safeKey(c.label)}`;
+              localStorage.setItem(k, JSON.stringify({
+                weight: Number(c.weight) || 0,
+                set: Number(c.set) || 0
+              }));
+            });
+          });
+        });
+
+        if(typeof d.gridCols === 'number') applyGridCols(d.gridCols);
+
+        alert('Import complete.');
+        renderGroups();
+        closePanel();
+        return;
       }
 
-      alert('Import complete.');
-      if(document.getElementById('panel').classList.contains('show')) closePanel();
+      alert('Import failed. Unrecognized file format.');
     }catch(err){
-      alert('Import failed. Please select a valid export JSON.');
+      alert('Import failed. Invalid file.');
     }
   };
   r.readAsText(f);
-  e.target.value='';
 };
 
-function resetAll(){
-  const ok = confirm('Reset all saved reps/weights AND the editable exercise list on this device? (Export first if you want a backup)');
-  if(!ok) return;
+/* =======================
+   RESET (only this app)
+======================= */
+function resetBabeSculpting(){
+  if(!confirm('This will ERASE ALL Babe Sculpting data (groups, exercises, workout entries). Continue?')) return;
 
-  const keys=[];
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k && k.startsWith('BSCULPT::')) keys.push(k);
-  }
-  keys.forEach(k=>localStorage.removeItem(k));
+  Object.keys(localStorage)
+    .filter(k => k.startsWith(KEY_PREFIX))
+    .forEach(k => localStorage.removeItem(k));
 
-  localStorage.removeItem(EXDB_KEY);
-  seedExerciseDBIfMissing();
+  localStorage.removeItem(APP_KEY);
 
-  alert('All data cleared (defaults restored).');
+  APP = loadAppData();
+  renderGroups();
+  closePanel();
 }
 
-let toastTimer=null;
-function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg;
-  el.style.display='block';
-  if(toastTimer) clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>{ el.style.display='none'; }, 1400);
-}
-
-window.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape') closePanel();
-});
-
-seedExerciseDBIfMissing();
+/* =======================
+   INIT
+======================= */
+applyGridCols(getGridCols());
+renderGroups();
 </script>
+
 </body>
 </html>
