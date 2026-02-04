@@ -39,7 +39,6 @@
     justify-content:space-around;
   }
 
-  /* ✅ TRUE 1/2/3 across */
   #groupsRoot{
     width:100%;
     display:grid;
@@ -432,22 +431,18 @@
     border-color: rgba(61,214,198,.55);
     box-shadow: 0 0 0 3px rgba(61,214,198,.14);
   }
-
-  /* file input styling (kept simple, matches modal) */
   .modal input[type="file"]{
     padding:10px;
     font-size:13px;
     font-weight:850;
     cursor:pointer;
   }
-
   .modal .hint{
     font-size:12px;
     opacity:.82;
     line-height:1.25;
     margin-top:2px;
   }
-
   .modal .actions{
     display:flex;
     gap:10px;
@@ -469,6 +464,77 @@
     background: linear-gradient(180deg, rgba(255,92,110,.18), rgba(255,92,110,.08));
   }
 
+  /* ===== Group List Sort UI ===== */
+  .gl-toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:8px 0 10px;
+  }
+  .gl-pill{
+    flex:1;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    color: var(--text);
+    font-weight:950;
+    cursor:pointer;
+    box-shadow: 0 10px 24px rgba(0,0,0,.45);
+    text-align:center;
+    user-select:none;
+  }
+  .gl-pill.active{
+    border-color: rgba(61,214,198,.45);
+    box-shadow: 0 10px 24px rgba(61,214,198,.12), 0 10px 24px rgba(0,0,0,.45);
+  }
+  .gl-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    max-height:58vh;
+    overflow:auto;
+    padding-right:2px;
+  }
+  .gl-item{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(12,16,22,.55);
+    border-radius:14px;
+    padding:10px;
+    box-shadow: 0 10px 22px rgba(0,0,0,.45);
+  }
+  .gl-item .name{
+    flex:1;
+    font-weight:950;
+    letter-spacing:.2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .gl-move{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .gl-move button{
+    width:44px;
+    padding:10px 0;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.14);
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    color: var(--text);
+    font-weight:950;
+    cursor:pointer;
+    box-shadow: 0 10px 22px rgba(0,0,0,.45);
+  }
+  .gl-move button:disabled{
+    opacity:.35;
+    cursor:not-allowed;
+  }
+
   @media (max-width:420px){
     .chart{ grid-template-columns:repeat(5,64px); }
   }
@@ -481,6 +547,7 @@
 
 <div class="controls">
   <button onclick="addMuscleGroup()">+ Add Muscle Group</button>
+  <button onclick="openGroupList()">Muscle Group List</button>
   <button class="grid-btn" id="gridToggleBtn" onclick="toggleGrid()">Grid: 3 Across</button>
   <button onclick="exportData()">Export</button>
   <input type="file" id="importFile" accept="application/json" hidden>
@@ -732,11 +799,20 @@ function escapeHtml(s){
     .replaceAll("'","&#039;");
 }
 
+/* ✅ NEW: grid render uses "display order" based on sort mode */
+function getDisplayedGroups(){
+  const mode = getGroupSortMode();
+  if(mode === 'alpha'){
+    return [...APP.groups].sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  }
+  return [...APP.groups];
+}
+
 function renderGroups(){
   const root = document.getElementById('groupsRoot');
   root.innerHTML = '';
 
-  APP.groups.forEach(g=>{
+  getDisplayedGroups().forEach(g=>{
     const tile = document.createElement('div');
     tile.className = 'thumbnail-container';
 
@@ -903,7 +979,91 @@ function readFileAsDataURL(file){
 }
 
 /* =======================
-   GROUP CRUD (✅ add upload OR URL)
+   GROUP LIST / SORT
+======================= */
+const GROUP_SORT_MODE_KEY = 'BSCULPT::GROUPSORTMODE::v1';
+function getGroupSortMode(){
+  const m = localStorage.getItem(GROUP_SORT_MODE_KEY) || 'user';
+  return (m === 'alpha' || m === 'user') ? m : 'user';
+}
+
+/* ✅ FIX: alphabetical now updates grid immediately by changing sort mode + re-rendering grid */
+function setGroupSortMode(mode){
+  localStorage.setItem(GROUP_SORT_MODE_KEY, mode === 'alpha' ? 'alpha' : 'user');
+  openGroupList();     // refresh pills/list UI
+  renderGroups();      // ✅ refresh grid itself
+}
+
+function openGroupList(){
+  const html = `
+    <h3>Muscle Groups</h3>
+
+    <div class="gl-toolbar">
+      <div class="gl-pill ${getGroupSortMode()==='user' ? 'active':''}" onclick="setGroupSortMode('user')">User Order</div>
+      <div class="gl-pill ${getGroupSortMode()==='alpha' ? 'active':''}" onclick="setGroupSortMode('alpha')">Alphabetical</div>
+    </div>
+
+    <div class="hint">In <b>User Order</b>, use ▲▼ to reorder. Alphabetical instantly sorts the grid.</div>
+
+    <div id="groupListBody" class="gl-list"></div>
+
+    <div class="actions" style="margin-top:12px;">
+      <button onclick="closeModal()">Close</button>
+      <button onclick="applyGroupListChanges()">Done</button>
+    </div>
+  `;
+  openModal(html);
+  renderGroupListBody();
+}
+
+function renderGroupListBody(){
+  const body = document.getElementById('groupListBody');
+  if(!body) return;
+
+  const mode = getGroupSortMode();
+  const list = (mode === 'alpha')
+    ? [...APP.groups].sort((a,b)=>String(a.name).localeCompare(String(b.name)))
+    : [...APP.groups];
+
+  body.innerHTML = '';
+
+  list.forEach((g, idx)=>{
+    const canMove = (mode === 'user');
+    const item = document.createElement('div');
+    item.className = 'gl-item';
+    item.innerHTML = `
+      <div class="name">${escapeHtml(g.name)}</div>
+      <div class="gl-move" style="${canMove ? '' : 'display:none'}">
+        <button ${idx===0 ? 'disabled':''} onclick="moveGroupInUserOrder('${g.id}', -1)">▲</button>
+        <button ${idx===list.length-1 ? 'disabled':''} onclick="moveGroupInUserOrder('${g.id}', 1)">▼</button>
+      </div>
+    `;
+    body.appendChild(item);
+  });
+}
+
+function moveGroupInUserOrder(groupId, dir){
+  const i = APP.groups.findIndex(g=>g.id===groupId);
+  if(i < 0) return;
+  const j = i + dir;
+  if(j < 0 || j >= APP.groups.length) return;
+
+  const tmp = APP.groups[i];
+  APP.groups[i] = APP.groups[j];
+  APP.groups[j] = tmp;
+
+  saveAppData(APP);
+  renderGroupListBody();
+  renderGroups(); // keep grid synced
+}
+
+function applyGroupListChanges(){
+  closeModal();
+  renderGroups();
+}
+
+/* =======================
+   GROUP CRUD (upload OR URL)
 ======================= */
 function addMuscleGroup(){
   openModal(`
@@ -911,7 +1071,7 @@ function addMuscleGroup(){
     <div class="row"><input id="mgName" placeholder="Group name (ex: Calves)"></div>
     <div class="row"><input id="mgImg" placeholder="Image URL (optional)"></div>
     <div class="row"><input id="mgFile" type="file" accept="image/*"></div>
-    <div class="hint">Pick <b>either</b> an Image URL <b>or</b> upload an image. If you upload, it’s saved inside the app.</div>
+    <div class="hint">Pick <b>either</b> an Image URL <b>or</b> upload an image. Upload overrides URL.</div>
     <div class="actions">
       <button onclick="closeModal()">Cancel</button>
       <button onclick="confirmAddGroup()">Add</button>
@@ -926,7 +1086,6 @@ async function confirmAddGroup(){
 
   if(!name){ alert('Enter a group name.'); return; }
 
-  // If file selected, it wins over URL
   if(f){
     try{ img = await readFileAsDataURL(f); }
     catch{ alert('Could not read image. Try a different file.'); return; }
@@ -947,7 +1106,7 @@ function editMuscleGroup(groupId){
     <div class="row"><input id="mgName" placeholder="Group name" value="${escapeHtml(g.name)}"></div>
     <div class="row"><input id="mgImg" placeholder="Image URL (optional)" value="${escapeHtml(g.img||'')}"></div>
     <div class="row"><input id="mgFile" type="file" accept="image/*"></div>
-    <div class="hint">To replace the image: paste a URL, or upload a new one. If you upload, it overrides the URL.</div>
+    <div class="hint">To replace the image: paste a URL, or upload a new one. Upload overrides URL.</div>
     <div class="actions">
       <button onclick="closeModal()">Cancel</button>
       <button onclick="confirmEditGroup('${groupId}')">Save</button>
@@ -1017,7 +1176,7 @@ function confirmDeleteGroup(groupId){
 }
 
 /* =======================
-   EXERCISE CRUD (✅ add upload OR URL)
+   EXERCISE CRUD (upload OR URL)
 ======================= */
 function addExercise(groupId){
   const g = APP.groups.find(x=>x.id===groupId);
@@ -1201,7 +1360,6 @@ document.getElementById('importFile').onchange = e=>{
     try{
       const d = JSON.parse(r.result);
 
-      // Clear existing workout keys (keep app + grid keys)
       Object.keys(localStorage).forEach(k=>{
         if(!k.startsWith(KEY_PREFIX)) return;
         if(k === APP_KEY) return;
@@ -1209,7 +1367,6 @@ document.getElementById('importFile').onchange = e=>{
         localStorage.removeItem(k);
       });
 
-      // ========== NEW FORMAT (v4) ==========
       if(d && d.appData && Array.isArray(d.appData.groups)){
         APP = d.appData;
         saveAppData(APP);
@@ -1232,7 +1389,6 @@ document.getElementById('importFile').onchange = e=>{
         return;
       }
 
-      // ========== OLDER FORMAT (v2) ==========
       if(d && Array.isArray(d.groups) && d.groups.length){
         const defaults = defaultAppData().groups;
         const defByName = (name)=>defaults.find(g=>g.name === name);
