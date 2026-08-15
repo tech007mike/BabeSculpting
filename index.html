@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Babe Sculpting</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Body Sculpt</title>
 
 <style>
   :root{
@@ -20,6 +20,13 @@
     --shadow: 0 16px 45px rgba(0,0,0,.55);
     --shadow2: 0 10px 28px rgba(0,0,0,.45);
     --radius: 14px;
+  }
+
+  html.modal-open,
+  body.modal-open{
+    overflow:hidden !important;
+    overscroll-behavior:none;
+    touch-action:none;
   }
 
   body{
@@ -213,9 +220,14 @@
     width:min(560px, 92vw);
     max-height:86vh;
     overflow-y:auto;
+    overflow-x:hidden;
     padding:16px;
     border-radius:16px;
     background:transparent;
+
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
   }
 
   .panel-header{
@@ -396,6 +408,9 @@
     transform:translate(-50%,-50%);
     z-index:3001;
     width:min(560px, 92vw);
+    max-height:86vh;
+    overflow-y:auto;
+    overflow-x:hidden;
     background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.04));
     border:1px solid rgba(255,255,255,.12);
     border-radius:16px;
@@ -404,6 +419,10 @@
     display:none;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
   }
   .modal h3{
     margin:6px 0 10px;
@@ -535,6 +554,54 @@
     cursor:not-allowed;
   }
 
+  .percent-box{
+    margin:12px 0;
+    padding:12px;
+    border-radius:14px;
+    border:1px solid rgba(61,214,198,.24);
+    background: linear-gradient(180deg, rgba(61,214,198,.08), rgba(255,255,255,.03));
+    box-shadow: 0 10px 24px rgba(0,0,0,.35);
+  }
+  .percent-toggle{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:950;
+    cursor:pointer;
+    user-select:none;
+  }
+  .percent-toggle input{
+    width:auto;
+    transform:scale(1.15);
+  }
+  .percent-fields{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:10px;
+  }
+  .percent-preview{
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+  }
+  .percent-preview-row{
+    display:grid;
+    grid-template-columns:1.2fr .8fr .8fr;
+    gap:8px;
+    align-items:center;
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(12,16,22,.48);
+    font-size:12px;
+    font-weight:850;
+  }
+  .percent-preview-row strong{
+    color:var(--gold2);
+  }
+
   @media (max-width:420px){
     .chart{ grid-template-columns:repeat(5,64px); }
   }
@@ -567,7 +634,7 @@
 ======================= */
 const APP_KEY = 'BSCULPT::APPDATA::v1';
 const KEY_PREFIX = 'BSCULPT::';
-const CHART_ORDER = ['Warm Up','1','2','3'];
+const DEFAULT_SET_LABELS = ['Warm Up','1','2','3'];
 const LONG_PRESS_MS = 550;
 const GRID_KEY = 'BSCULPT::GRIDCOLS::v1';
 
@@ -578,72 +645,14 @@ function uid(){
 function defaultAppData(){
   return {
     version: 1,
+    setLabels: [...DEFAULT_SET_LABELS],
     groups: [
-      {
-        id: uid(),
-        name: 'Legs/Glutes',
-        img: 'https://jessicaautumn.com/wp-content/uploads/2019/06/10-Minute-Workout-For-The-Perfect-Bubble-Butt.png',
-        exercises: [
-          { id: uid(), name:'Leg curl', img:'https://www.hoistfitness.com/cdn/shop/files/RS-2408_FINISHSIDE2_resized.png' },
-          { id: uid(), name:'Leg press', img:'https://i.ytimg.com/vi/n2ng6LCp3yk/hq720.jpg' },
-          { id: uid(), name:'Hip Spread', img:'https://blackbearfitness.co.uk/cdn/shop/files/Untitled-design33-1_cleanup.png' },
-          { id: uid(), name:'Hip Squeeze', img:'https://extremefitness.co.uk/wp-content/uploads/Untitled-design29.jpg' },
-          { id: uid(), name:'Leg Extensions', img:'https://cffstrengthequipment.com/cdn/shop/products/hoist_leg_extension_rs_1401_a.1_1024x1024.jpg' },
-          { id: uid(), name:'Booty squats', img:'https://www.shutterstock.com/image-photo/woman-training-fitness-rubber-band-260nw-2210643481.jpg' }
-        ]
-      },
-      {
-        id: uid(),
-        name: 'Back',
-        img: 'https://betterme.world/articles/wp-content/uploads/2023/04/shutterstock_1654270861.jpg',
-        exercises: [
-          { id: uid(), name:'Row (triangle)', img:'https://i.ytimg.com/vi/hxdhLPCCJQI/maxresdefault.jpg' },
-          { id: uid(), name:'Row (bar)', img:'https://i.ytimg.com/vi/9_35TQNqm7Q/hqdefault.jpg' },
-          { id: uid(), name:'Pull down (triangle)', img:'https://dungcutheduc.vn/images/close-grip-lat-pulldown.jpg' },
-          { id: uid(), name:'Pull down (bar)', img:'https://i.vimeocdn.com/video/867314588.webp' },
-          { id: uid(), name:'Face pull', img:'https://i.pinimg.com/736x/f3/68/85/f3688525e50f2814a74990a1a06b4895.jpg' },
-          { id: uid(), name:'Rear Delt Flyes', img:'https://www.buyandsellfitness.com/cdn/shop/products/Rear-Delt-Finsh_1024x1024.jpg' }
-        ]
-      },
-      {
-        id: uid(),
-        name: 'Biceps',
-        img: 'https://i.pinimg.com/736x/e4/fd/2e/e4fd2e34aec8c4f86e10fceb79fe1bed.jpg',
-        exercises: [
-          { id: uid(), name:'Hammer curl dumbbell', img:'https://julielohre.com/wp-content/uploads/2018/07/Bicep-Hammer-Curl.jpg' },
-          { id: uid(), name:'Open hand curl dumbbell', img:'https://kefl.co.uk/cdn/shop/articles/best-dumbbell-exercises-for-building-muscle-148250.jpg' },
-          { id: uid(), name:'Rope curl', img:'https://img.livestrong.com/375/cme-data/getty/d98f17ab178a4804b614028dfa95278e.jpg' },
-          { id: uid(), name:'Drag curls', img:'https://i.ytimg.com/vi/1n_2P4OR-0Q/maxresdefault.jpg' }
-        ]
-      },
-      {
-        id: uid(),
-        name: 'Chest',
-        img: 'https://hips.hearstapps.com/hmg-prod/images/766/articles/2017/10/benchpress-1508589156.jpg',
-        exercises: [
-          { id: uid(), name:'Machine chest press', img:'https://t4.ftcdn.net/jpg/03/00/96/39/360_F_300963984.jpg' },
-          { id: uid(), name:'Chest flyes', img:'https://workouthealthy.com/cdn/shop/files/BS-S2PEC.webp' }
-        ]
-      },
-      {
-        id: uid(),
-        name: 'Shoulders',
-        img: 'https://media.istockphoto.com/id/1370070773/photo/fitness.jpg?s=612x612&w=0&k=20&c=FjKgCTJnlLUV8V0ftf0rgsjKgUPD83hWZQURViRRBmk=',
-        exercises: [
-          { id: uid(), name:'Shoulder press', img:'https://vtasfitnesscentre.com/wp-content/uploads/2021/03/Dumbbell-Shoulder-Press.jpg' },
-          { id: uid(), name:'Lateral raise', img:'https://images.ctfassets.net/8urtyqugdt2l/1EG31PaEzRIWNnuW9VeXcI/29ca964acdaf4d51494ca515971093f9/tile-image-how-to-do-lateral-raises.jpg' }
-        ]
-      },
-      {
-        id: uid(),
-        name: 'Triceps',
-        img: 'https://t4.ftcdn.net/jpg/01/70/23/39/360_F_170233939_NAVDp5d9kTWMwthTNC3ZJiwqxrKOfdUs.jpg',
-        exercises: [
-          { id: uid(), name:'Rope triceps', img:'https://s3assets.skimble.com/assets/2674907/image_full.jpg' },
-          { id: uid(), name:'Triangle tricep push down', img:'https://images.squarespace-cdn.com/tricep.jpg' },
-          { id: uid(), name:'Dip Machine', img:'https://s3.amazonaws.com/prod.skimble/assets/1495083/image_iphone.jpg' }
-        ]
-      }
+      { id: uid(), name: 'Legs', img: '', exercises: [] },
+      { id: uid(), name: 'Back', img: '', exercises: [] },
+      { id: uid(), name: 'Biceps', img: '', exercises: [] },
+      { id: uid(), name: 'Chest', img: '', exercises: [] },
+      { id: uid(), name: 'Shoulders', img: '', exercises: [] },
+      { id: uid(), name: 'Triceps', img: '', exercises: [] }
     ]
   };
 }
@@ -656,8 +665,32 @@ function loadAppData(){
       localStorage.setItem(APP_KEY, JSON.stringify(d));
       return d;
     }
+
     const parsed = JSON.parse(raw);
     if(!parsed || !Array.isArray(parsed.groups)) throw new Error('bad');
+
+    if(!Array.isArray(parsed.setLabels) || parsed.setLabels.length === 0){
+      parsed.setLabels = [...DEFAULT_SET_LABELS];
+    }
+
+    let upgraded = false;
+    parsed.groups.forEach(group=>{
+      (group.exercises || []).forEach(ex=>{
+        if(!Array.isArray(ex.setLabels) || ex.setLabels.length === 0){
+          ex.setLabels = [...parsed.setLabels];
+          upgraded = true;
+        }
+        if(!ex.percentageConfig || typeof ex.percentageConfig !== 'object'){
+          ex.percentageConfig = { enabled:false, maxWeight:0, maxReps:0 };
+          upgraded = true;
+        }
+      });
+    });
+
+    if(upgraded){
+      localStorage.setItem(APP_KEY, JSON.stringify(parsed));
+    }
+
     return parsed;
   }catch{
     const d = defaultAppData();
@@ -665,10 +698,117 @@ function loadAppData(){
     return d;
   }
 }
-function saveAppData(data){ localStorage.setItem(APP_KEY, JSON.stringify(data)); }
+
+function saveAppData(data){
+  localStorage.setItem(APP_KEY, JSON.stringify(data));
+}
 
 let APP = loadAppData();
 let CURRENT_GROUP_ID = null;
+
+let BODY_SCROLL_Y = 0;
+
+function lockBackgroundScroll(){
+  if(document.body.classList.contains('modal-open')) return;
+
+  BODY_SCROLL_Y = window.scrollY || document.documentElement.scrollTop || 0;
+
+  document.documentElement.classList.add('modal-open');
+  document.body.classList.add('modal-open');
+
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${BODY_SCROLL_Y}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+}
+
+function unlockBackgroundScroll(){
+  const panelOpen = document.querySelector('.overlay')?.style.display === 'block';
+  const modalOpen = document.getElementById('modalOverlay')?.style.display === 'block';
+
+  if(panelOpen || modalOpen) return;
+
+  document.documentElement.classList.remove('modal-open');
+  document.body.classList.remove('modal-open');
+
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+
+  window.scrollTo(0, BODY_SCROLL_Y);
+}
+
+function stopBackgroundTouchScroll(e){
+  const modal = document.getElementById('modal');
+  const panel = document.getElementById('panel');
+
+  const modalVisible = modal?.style.display === 'block';
+  const panelVisible = document.querySelector('.overlay')?.style.display === 'block';
+
+  if(modalVisible){
+    if(!e.target.closest('#modal')){
+      e.preventDefault();
+    }
+    return;
+  }
+
+  if(panelVisible && !e.target.closest('#panel')){
+    e.preventDefault();
+  }
+}
+
+document.addEventListener('touchmove', stopBackgroundTouchScroll, {passive:false});
+
+function installTouchScrollContainment(el){
+  if(!el || el.dataset.touchContainmentInstalled === '1') return;
+  el.dataset.touchContainmentInstalled = '1';
+
+  let startY = 0;
+
+  el.addEventListener('touchstart', (e)=>{
+    if(!e.touches?.length) return;
+    startY = e.touches[0].clientY;
+  }, {passive:true});
+
+  el.addEventListener('touchmove', (e)=>{
+    if(!e.touches?.length) return;
+
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - startY;
+
+    const atTop = el.scrollTop <= 0;
+    const atBottom = Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight;
+
+    const tryingPastTop = atTop && deltaY > 0;
+    const tryingPastBottom = atBottom && deltaY < 0;
+
+    if((tryingPastTop || tryingPastBottom) && el.scrollHeight > el.clientHeight){
+      e.preventDefault();
+    }
+  }, {passive:false});
+}
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  installTouchScrollContainment(document.getElementById('panel'));
+  installTouchScrollContainment(document.getElementById('modal'));
+});
+
+function getDefaultSetLabels(){
+  if(Array.isArray(APP.setLabels) && APP.setLabels.length){
+    return [...APP.setLabels];
+  }
+  return [...DEFAULT_SET_LABELS];
+}
+
+function getExerciseSetLabels(ex){
+  if(ex && Array.isArray(ex.setLabels) && ex.setLabels.length){
+    return ex.setLabels;
+  }
+  return getDefaultSetLabels();
+}
 
 /* =======================
    GRID TOGGLE (1/2/3)
@@ -799,7 +939,6 @@ function escapeHtml(s){
     .replaceAll("'","&#039;");
 }
 
-/* ✅ NEW: grid render uses "display order" based on sort mode */
 function getDisplayedGroups(){
   const mode = getGroupSortMode();
   if(mode === 'alpha'){
@@ -849,8 +988,11 @@ function openGroupPanel(groupId){
   if(!g) return;
 
   document.querySelector('.overlay').style.display='block';
+  lockBackgroundScroll();
+
   const panel = document.getElementById('panel');
   panel.innerHTML = '';
+  panel.scrollTop = 0;
 
   const header = document.createElement('div');
   header.className = 'panel-header';
@@ -871,10 +1013,15 @@ function openGroupPanel(groupId){
       <div class="exercise-title">${escapeHtml(ex.name)}</div>
       <div class="exercise-actions">
         <button onclick="editExercise('${g.id}','${ex.id}')">Edit</button>
+        <button onclick="openSetSettings('${g.id}','${ex.id}')">Edit Sets</button>
         <button class="danger" onclick="deleteExercise('${g.id}','${ex.id}')">Delete</button>
       </div>
     `;
-    CHART_ORDER.forEach(label=>card.appendChild(buildChart(g.name, ex.name, label)));
+
+    getExerciseSetLabels(ex).forEach(label=>{
+      card.appendChild(buildChart(g.name, ex.name, label));
+    });
+
     panel.appendChild(card);
   });
 }
@@ -883,6 +1030,7 @@ function closePanel(){
   document.querySelector('.overlay').style.display='none';
   document.getElementById('panel').innerHTML='';
   CURRENT_GROUP_ID = null;
+  unlockBackgroundScroll();
 }
 
 /* =======================
@@ -899,7 +1047,7 @@ function buildChart(groupName, exName, label){
 
   wrapper.innerHTML=`
     <div class="chart">
-      <div class="cell chart-label">${label}</div>
+      <div class="cell chart-label">${escapeHtml(label)}</div>
 
       <div class="cell editable" style="grid-column:2/span 2">
         <input
@@ -960,11 +1108,17 @@ function openModal(html){
   document.getElementById('modal').innerHTML = html;
   document.getElementById('modalOverlay').style.display = 'block';
   document.getElementById('modal').style.display = 'block';
+  lockBackgroundScroll();
+
+  const modal = document.getElementById('modal');
+  if(modal) modal.scrollTop = 0;
 }
+
 function closeModal(){
   document.getElementById('modalOverlay').style.display = 'none';
   document.getElementById('modal').style.display = 'none';
   document.getElementById('modal').innerHTML = '';
+  unlockBackgroundScroll();
 }
 function val(id){ return (document.getElementById(id)?.value ?? '').trim(); }
 function fileEl(id){ return document.getElementById(id); }
@@ -979,6 +1133,398 @@ function readFileAsDataURL(file){
 }
 
 /* =======================
+   SET / CHART SETTINGS
+   (PER EXERCISE)
+======================= */
+function roundToNearest2_5(value){
+  return Math.round((Number(value) || 0) / 2.5) * 2.5;
+}
+
+function formatWeight(value){
+  const n = Number(value) || 0;
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
+/*
+  Percentage breakdown:
+  Set 1: Warm Up = 50% of max
+  Set 2: Max = 100% of max
+  Set 3+: 80% of the immediately previous working set
+
+  Reps:
+  Warm Up = max reps + 2
+  Max = max reps
+  Set 3 = max reps + 2
+  Set 4 = max reps + 4
+  ...continuing +2 reps per additional set.
+*/
+function calculatePercentageBreakdown(setCount, maxWeight, maxReps){
+  const count = Math.max(1, parseInt(setCount, 10) || 1);
+  const maxW = Math.max(0, Number(maxWeight) || 0);
+  const maxR = Math.max(0, parseInt(maxReps, 10) || 0);
+
+  const rows = [];
+
+  for(let i = 0; i < count; i++){
+    let weight = 0;
+    let reps = maxR;
+    let suggestedLabel = `Set ${i + 1}`;
+
+    if(i === 0){
+      weight = roundToNearest2_5(maxW * 0.5);
+      reps = maxR + 2;
+      suggestedLabel = 'Warm Up';
+    }else if(i === 1){
+      weight = roundToNearest2_5(maxW);
+      reps = maxR;
+      suggestedLabel = 'Max';
+    }else{
+      const previousWeight = rows[i - 1].weight;
+      weight = roundToNearest2_5(previousWeight * 0.8);
+      reps = maxR + ((i - 1) * 2);
+      suggestedLabel = `Set ${i + 1}`;
+    }
+
+    rows.push({
+      index: i,
+      weight,
+      reps,
+      suggestedLabel
+    });
+  }
+
+  return rows;
+}
+
+function openSetSettings(groupId, exId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  const ex = g?.exercises.find(e=>e.id===exId);
+  if(!g || !ex) return;
+
+  const labels = [...getExerciseSetLabels(ex)];
+  const pct = ex.percentageConfig || {};
+  const pctEnabled = pct.enabled === true;
+  const maxWeight = Number(pct.maxWeight) || '';
+  const maxReps = Number.isFinite(Number(pct.maxReps)) && Number(pct.maxReps) > 0
+    ? Number(pct.maxReps)
+    : '';
+
+  openModal(`
+    <h3>Edit Sets — ${escapeHtml(ex.name)}</h3>
+
+    <div class="row">
+      <input
+        id="setCount"
+        type="number"
+        inputmode="numeric"
+        min="1"
+        max="20"
+        step="1"
+        value="${labels.length}"
+        placeholder="Number of sets"
+        oninput="handleSetCountChange(this.value)"
+      >
+    </div>
+
+    <div class="hint">
+      These set rows and labels apply only to <b>${escapeHtml(ex.name)}</b>.
+      Other exercises will not be changed.
+    </div>
+
+    <div class="percent-box">
+      <label class="percent-toggle">
+        <input
+          id="percentageEnabled"
+          type="checkbox"
+          ${pctEnabled ? 'checked' : ''}
+          onchange="togglePercentageFields()"
+        >
+        Use percentage breakdown
+      </label>
+
+      <div id="percentageFields" style="${pctEnabled ? '' : 'display:none'}">
+        <div class="percent-fields">
+          <input
+            id="percentageMaxWeight"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="2.5"
+            placeholder="Max weight (lb)"
+            value="${maxWeight}"
+            oninput="updatePercentagePreview()"
+          >
+          <input
+            id="percentageMaxReps"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            step="1"
+            placeholder="Max reps"
+            value="${maxReps}"
+            oninput="updatePercentagePreview()"
+          >
+        </div>
+
+        <div class="hint" style="margin-top:8px;">
+          Set 1 = 50% warm up. Set 2 = max. Each set after that is
+          80% of the previous set, rounded to the nearest 2.5 lb.
+          Reps increase by 2 for each set after the max set.
+        </div>
+
+        <div id="percentagePreview" class="percent-preview"></div>
+      </div>
+    </div>
+
+    <div id="setLabelsContainer"
+      style="display:flex; flex-direction:column; gap:8px; margin-top:12px;"></div>
+
+    <div class="hint" style="margin-top:10px;">
+      You can still edit every label manually. When percentage breakdown is enabled,
+      saving also fills the calculated weight and reps into this exercise.
+    </div>
+
+    <div class="actions">
+      <button onclick="closeModal()">Cancel</button>
+      <button onclick="confirmSetSettings('${groupId}','${exId}')">Save</button>
+    </div>
+  `);
+
+  renderSetLabelInputs(labels.length, labels);
+  updatePercentagePreview();
+}
+
+function handleSetCountChange(count){
+  renderSetLabelInputs(count);
+  updatePercentagePreview();
+}
+
+function togglePercentageFields(){
+  const enabled = !!document.getElementById('percentageEnabled')?.checked;
+  const fields = document.getElementById('percentageFields');
+  if(fields){
+    fields.style.display = enabled ? '' : 'none';
+  }
+  updatePercentagePreview();
+}
+
+function renderSetLabelInputs(count, suppliedValues = null){
+  const container = document.getElementById('setLabelsContainer');
+  if(!container) return;
+
+  let n = parseInt(count, 10);
+  if(!Number.isFinite(n)) n = 1;
+  n = Math.max(1, Math.min(20, n));
+
+  const countInput = document.getElementById('setCount');
+  if(countInput && String(countInput.value) !== String(n)){
+    countInput.value = n;
+  }
+
+  let currentValues = [];
+
+  if(Array.isArray(suppliedValues)){
+    currentValues = [...suppliedValues];
+  }else{
+    currentValues = [...container.querySelectorAll('.set-label-input')]
+      .map(input => input.value);
+  }
+
+  container.innerHTML = '';
+
+  for(let i = 0; i < n; i++){
+    let value = currentValues[i] !== undefined ? currentValues[i] : `Set ${i + 1}`;
+
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.margin = '0';
+
+    row.innerHTML = `
+      <input
+        class="set-label-input"
+        data-index="${i}"
+        placeholder="Set ${i + 1} label"
+        value="${escapeHtml(value)}"
+        oninput="updatePercentagePreview()"
+      >
+    `;
+
+    container.appendChild(row);
+  }
+
+  if(document.getElementById('percentageEnabled')?.checked){
+    applySuggestedPercentageLabels();
+  }
+}
+
+function applySuggestedPercentageLabels(){
+  const enabled = !!document.getElementById('percentageEnabled')?.checked;
+  if(!enabled) return;
+
+  const count = parseInt(document.getElementById('setCount')?.value, 10) || 1;
+  const inputs = [...document.querySelectorAll('#setLabelsContainer .set-label-input')];
+
+  inputs.forEach((input, index)=>{
+    if(index === 0 && (!input.value.trim() || /^set\s*1$/i.test(input.value.trim()))){
+      input.value = 'Warm Up';
+    }else if(index === 1 && (!input.value.trim() || /^set\s*2$/i.test(input.value.trim()))){
+      input.value = 'Max';
+    }else if(index >= 2 && !input.value.trim()){
+      input.value = `Set ${index + 1}`;
+    }
+  });
+}
+
+function updatePercentagePreview(){
+  const preview = document.getElementById('percentagePreview');
+  if(!preview) return;
+
+  const enabled = !!document.getElementById('percentageEnabled')?.checked;
+  if(!enabled){
+    preview.innerHTML = '';
+    return;
+  }
+
+  applySuggestedPercentageLabels();
+
+  const setCount = parseInt(document.getElementById('setCount')?.value, 10) || 1;
+  const maxWeight = Number(document.getElementById('percentageMaxWeight')?.value) || 0;
+  const maxReps = parseInt(document.getElementById('percentageMaxReps')?.value, 10) || 0;
+  const labels = [...document.querySelectorAll('#setLabelsContainer .set-label-input')]
+    .map((input, i)=>input.value.trim() || `Set ${i + 1}`);
+
+  if(maxWeight <= 0 || maxReps <= 0){
+    preview.innerHTML = `
+      <div class="hint">Enter max weight and max reps to preview the breakdown.</div>
+    `;
+    return;
+  }
+
+  const rows = calculatePercentageBreakdown(setCount, maxWeight, maxReps);
+
+  preview.innerHTML = rows.map((row, i)=>`
+    <div class="percent-preview-row">
+      <strong>${escapeHtml(labels[i] || row.suggestedLabel)}</strong>
+      <span>${formatWeight(row.weight)} lb</span>
+      <span>${row.reps} reps</span>
+    </div>
+  `).join('');
+}
+
+function confirmSetSettings(groupId, exId){
+  const g = APP.groups.find(x=>x.id===groupId);
+  const ex = g?.exercises.find(e=>e.id===exId);
+  if(!g || !ex) return;
+
+  const inputs = [...document.querySelectorAll('#setLabelsContainer .set-label-input')];
+
+  if(inputs.length === 0){
+    alert('You must have at least one set.');
+    return;
+  }
+
+  const newLabels = inputs.map(input => input.value.trim());
+
+  if(newLabels.some(label => !label)){
+    alert('Every set must have a label.');
+    return;
+  }
+
+  const normalized = newLabels.map(label => safeKey(label).toLowerCase());
+
+  if(new Set(normalized).size !== normalized.length){
+    alert('Each set label must be unique within this exercise.');
+    return;
+  }
+
+  const percentageEnabled = !!document.getElementById('percentageEnabled')?.checked;
+  const maxWeight = Number(document.getElementById('percentageMaxWeight')?.value) || 0;
+  const maxReps = parseInt(document.getElementById('percentageMaxReps')?.value, 10) || 0;
+
+  if(percentageEnabled && (maxWeight <= 0 || maxReps <= 0)){
+    alert('Enter both max weight and max reps for the percentage breakdown.');
+    return;
+  }
+
+  const oldLabels = [...getExerciseSetLabels(ex)];
+
+  migrateWorkoutKeys_ExerciseSetLabels(g, ex, oldLabels, newLabels);
+
+  ex.setLabels = newLabels;
+  ex.percentageConfig = {
+    enabled: percentageEnabled,
+    maxWeight: percentageEnabled ? maxWeight : 0,
+    maxReps: percentageEnabled ? maxReps : 0
+  };
+
+  saveAppData(APP);
+
+  if(percentageEnabled){
+    applyPercentageBreakdownToExercise(g, ex);
+  }
+
+  closeModal();
+
+  if(CURRENT_GROUP_ID === groupId){
+    openGroupPanel(groupId);
+  }
+}
+
+function migrateWorkoutKeys_ExerciseSetLabels(group, ex, oldLabels, newLabels){
+  const oldValues = oldLabels.map(label=>{
+    const key =
+      `${KEY_PREFIX}${safeKey(group.name)}::` +
+      `${safeKey(ex.name)}::${safeKey(label)}`;
+    return localStorage.getItem(key);
+  });
+
+  oldLabels.forEach(label=>{
+    const key =
+      `${KEY_PREFIX}${safeKey(group.name)}::` +
+      `${safeKey(ex.name)}::${safeKey(label)}`;
+    localStorage.removeItem(key);
+  });
+
+  newLabels.forEach((label, index)=>{
+    if(index >= oldValues.length) return;
+    const raw = oldValues[index];
+    if(raw === null) return;
+
+    const newKey =
+      `${KEY_PREFIX}${safeKey(group.name)}::` +
+      `${safeKey(ex.name)}::${safeKey(label)}`;
+
+    localStorage.setItem(newKey, raw);
+  });
+}
+
+function applyPercentageBreakdownToExercise(group, ex){
+  const cfg = ex.percentageConfig;
+  if(!cfg || !cfg.enabled) return;
+
+  const labels = getExerciseSetLabels(ex);
+  const rows = calculatePercentageBreakdown(
+    labels.length,
+    cfg.maxWeight,
+    cfg.maxReps
+  );
+
+  rows.forEach((row, index)=>{
+    const label = labels[index];
+    if(!label) return;
+
+    const key =
+      `${KEY_PREFIX}${safeKey(group.name)}::` +
+      `${safeKey(ex.name)}::${safeKey(label)}`;
+
+    localStorage.setItem(key, JSON.stringify({
+      weight: row.weight,
+      set: row.reps
+    }));
+  });
+}
+
+/* =======================
    GROUP LIST / SORT
 ======================= */
 const GROUP_SORT_MODE_KEY = 'BSCULPT::GROUPSORTMODE::v1';
@@ -987,11 +1533,10 @@ function getGroupSortMode(){
   return (m === 'alpha' || m === 'user') ? m : 'user';
 }
 
-/* ✅ FIX: alphabetical now updates grid immediately by changing sort mode + re-rendering grid */
 function setGroupSortMode(mode){
   localStorage.setItem(GROUP_SORT_MODE_KEY, mode === 'alpha' ? 'alpha' : 'user');
-  openGroupList();     // refresh pills/list UI
-  renderGroups();      // ✅ refresh grid itself
+  openGroupList();
+  renderGroups();
 }
 
 function openGroupList(){
@@ -1054,7 +1599,7 @@ function moveGroupInUserOrder(groupId, dir){
 
   saveAppData(APP);
   renderGroupListBody();
-  renderGroups(); // keep grid synced
+  renderGroups();
 }
 
 function applyGroupListChanges(){
@@ -1162,8 +1707,10 @@ function confirmDeleteGroup(groupId){
   if(!g) return;
 
   g.exercises.forEach(ex=>{
-    CHART_ORDER.forEach(label=>{
-      const k = `${KEY_PREFIX}${safeKey(g.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
+    getExerciseSetLabels(ex).forEach(label=>{
+      const k =
+        `${KEY_PREFIX}${safeKey(g.name)}::` +
+        `${safeKey(ex.name)}::${safeKey(label)}`;
       localStorage.removeItem(k);
     });
   });
@@ -1210,7 +1757,13 @@ async function confirmAddExercise(groupId){
     catch{ alert('Could not read image. Try a different file.'); return; }
   }
 
-  g.exercises.push({ id: uid(), name, img });
+  g.exercises.push({
+    id: uid(),
+    name,
+    img,
+    setLabels: getDefaultSetLabels(),
+    percentageConfig: { enabled:false, maxWeight:0, maxReps:0 }
+  });
   saveAppData(APP);
   closeModal();
   openGroupPanel(groupId);
@@ -1254,7 +1807,7 @@ async function confirmEditExercise(groupId, exId){
   ex.name = newName;
   ex.img  = newImg;
 
-  migrateWorkoutKeys_ExerciseRename(g.name, oldName, newName);
+  migrateWorkoutKeys_ExerciseRename(g.name, oldName, newName, ex);
 
   saveAppData(APP);
   closeModal();
@@ -1269,7 +1822,7 @@ function deleteExercise(groupId, exId){
   openModal(`
     <h3>Delete Exercise</h3>
     <div style="font-weight:900; color:#ffb3bb; margin:6px 0 10px;">
-      Delete "${escapeHtml(ex.name)}" (Warm Up, 1, 2, 3 data included)?
+      Delete "${escapeHtml(ex.name)}" and all of its workout data?
     </div>
     <div class="actions">
       <button onclick="closeModal()">Cancel</button>
@@ -1283,8 +1836,10 @@ function confirmDeleteExercise(groupId, exId){
   const ex = g?.exercises.find(e=>e.id===exId);
   if(!g || !ex) return;
 
-  CHART_ORDER.forEach(label=>{
-    const k = `${KEY_PREFIX}${safeKey(g.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
+  getExerciseSetLabels(ex).forEach(label=>{
+    const k =
+      `${KEY_PREFIX}${safeKey(g.name)}::` +
+      `${safeKey(ex.name)}::${safeKey(label)}`;
     localStorage.removeItem(k);
   });
 
@@ -1309,11 +1864,13 @@ function migrateWorkoutKeys_GroupRename(oldGroup, newGroup){
   });
 }
 
-function migrateWorkoutKeys_ExerciseRename(groupName, oldEx, newEx){
+function migrateWorkoutKeys_ExerciseRename(groupName, oldEx, newEx, ex){
   const base = `${KEY_PREFIX}${safeKey(groupName)}::`;
-  CHART_ORDER.forEach(label=>{
+
+  getExerciseSetLabels(ex).forEach(label=>{
     const oldKey = `${base}${safeKey(oldEx)}::${safeKey(label)}`;
     const v = localStorage.getItem(oldKey);
+
     if(v !== null){
       const newKey = `${base}${safeKey(newEx)}::${safeKey(label)}`;
       localStorage.setItem(newKey, v);
@@ -1327,7 +1884,7 @@ function migrateWorkoutKeys_ExerciseRename(groupName, oldEx, newEx){
 ======================= */
 function exportData(){
   const out = {
-    meta:{ app:'Babe Sculpting', version:4, exportedAt:new Date().toISOString() },
+    meta:{ app:'Body Sculpt', version:4, exportedAt:new Date().toISOString() },
     appData: APP,
     gridCols: getGridCols(),
     workouts: {}
@@ -1356,6 +1913,7 @@ function exportData(){
 document.getElementById('importFile').onchange = e=>{
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
+
   r.onload = ()=>{
     try{
       const d = JSON.parse(r.result);
@@ -1369,6 +1927,22 @@ document.getElementById('importFile').onchange = e=>{
 
       if(d && d.appData && Array.isArray(d.appData.groups)){
         APP = d.appData;
+
+        if(!Array.isArray(APP.setLabels) || APP.setLabels.length === 0){
+          APP.setLabels = [...DEFAULT_SET_LABELS];
+        }
+
+        APP.groups.forEach(group=>{
+          (group.exercises || []).forEach(ex=>{
+            if(!Array.isArray(ex.setLabels) || ex.setLabels.length === 0){
+              ex.setLabels = [...APP.setLabels];
+            }
+            if(!ex.percentageConfig || typeof ex.percentageConfig !== 'object'){
+              ex.percentageConfig = { enabled:false, maxWeight:0, maxReps:0 };
+            }
+          });
+        });
+
         saveAppData(APP);
 
         if(typeof d.gridCols === 'number') applyGridCols(d.gridCols);
@@ -1399,13 +1973,57 @@ document.getElementById('importFile').onchange = e=>{
 
           const exercises = (g.exercises || []).map(ex=>{
             const defEx = defG?.exercises?.find(x=>x.name === ex.name);
-            return { id: uid(), name: ex.name, img: defEx?.img || '' };
+            const labels = [];
+
+            (ex.charts || []).forEach(c=>{
+              if(!c || !c.label) return;
+              const label = String(c.label).trim();
+              if(label && !labels.some(existing => existing.toLowerCase() === label.toLowerCase())){
+                labels.push(label);
+              }
+            });
+
+            return {
+              id: uid(),
+              name: ex.name,
+              img: defEx?.img || '',
+              setLabels: labels.length ? labels : [...DEFAULT_SET_LABELS],
+              percentageConfig: { enabled:false, maxWeight:0, maxReps:0 }
+            };
           });
 
           return { id: uid(), name: g.group, img: groupImg, exercises };
         });
 
-        APP = { version: 1, groups: newGroups };
+        const importedLabels = [];
+
+        d.groups.forEach(g=>{
+          (g.exercises || []).forEach(ex=>{
+            (ex.charts || []).forEach(c=>{
+              if(!c || !c.label) return;
+
+              const label = String(c.label).trim();
+
+              if(
+                label &&
+                !importedLabels.some(
+                  existing => existing.toLowerCase() === label.toLowerCase()
+                )
+              ){
+                importedLabels.push(label);
+              }
+            });
+          });
+        });
+
+        APP = {
+          version: 1,
+          setLabels: importedLabels.length
+            ? importedLabels
+            : [...DEFAULT_SET_LABELS],
+          groups: newGroups
+        };
+
         saveAppData(APP);
 
         d.groups.forEach(g=>{
@@ -1434,6 +2052,7 @@ document.getElementById('importFile').onchange = e=>{
       alert('Import failed. Invalid file.');
     }
   };
+
   r.readAsText(f);
 };
 
@@ -1441,7 +2060,7 @@ document.getElementById('importFile').onchange = e=>{
    RESET (only this app)
 ======================= */
 function resetBabeSculpting(){
-  if(!confirm('This will ERASE ALL Babe Sculpting data (groups, exercises, workout entries). Continue?')) return;
+  if(!confirm('This will ERASE ALL Body Sculpt data (groups, exercises, workout entries). Continue?')) return;
 
   Object.keys(localStorage)
     .filter(k => k.startsWith(KEY_PREFIX))
